@@ -1,65 +1,64 @@
-# Meta_Kim for Claude Code
+# Meta_Kim 的 Claude Code 说明
 
-Meta_Kim uses Claude Code as the canonical authoring runtime, but the repository is built to port cleanly into OpenClaw and Codex.
+Meta_Kim 以 Claude Code 作为主编辑运行时，但仓库目标不是只服务 Claude Code，而是把同一套“元架构”稳定映射到 Claude Code、OpenClaw、Codex。
 
-## Canonical Files
+## 一、哪些文件是主源
 
-- Theory source: `meta/meta.md`
-- Claude project memory: `CLAUDE.md`
-- Claude subagents: `.claude/agents/*.md`
-- Claude skill source: `.claude/skills/meta-theory/SKILL.md`
-- Claude hooks: `.claude/settings.json` and `.claude/hooks/*`
-- Claude project MCP config: `.mcp.json`
-- Shared MCP server: `scripts/mcp/meta-runtime-server.mjs`
-- Cross-runtime contract: `AGENTS.md`
-- Capability matrix: `meta/runtime-capability-matrix.md`
+- 理论主源：`meta/meta.md`
+- Claude 子代理主源：`.claude/agents/*.md`
+- Claude Skill 主源：`.claude/skills/meta-theory/SKILL.md`
+- Claude Hooks：`.claude/settings.json` 与 `.claude/hooks/*`
+- Claude 项目级 MCP：`.mcp.json`
+- 共享 MCP 服务：`scripts/mcp/meta-runtime-server.mjs`
+- 跨运行时总说明：`AGENTS.md`
+- 能力矩阵：`meta/runtime-capability-matrix.md`
 
-## Hard Rules
+## 二、硬规则
 
-- Every file in `.claude/agents/` must keep valid YAML frontmatter with at least `name` and `description`.
-- `.claude/agents/*.md` and `.claude/skills/meta-theory/SKILL.md` are the only canonical authoring sources.
-- `openclaw/workspaces/*`, `openclaw/skills/*`, and `shared-skills/*` are derived assets. Regenerate them instead of hand-maintaining them.
-- After changing any canonical prompt or skill source, always run:
+- `.claude/agents/*.md` 必须保留合法 YAML frontmatter，至少包含 `name` 和 `description`，否则 Claude Code 不会把它识别为正式子代理。
+- `.claude/agents/*.md` 和 `.claude/skills/meta-theory/SKILL.md` 是唯一主编辑源。
+- `openclaw/workspaces/*`、`openclaw/skills/*`、`shared-skills/*` 都是派生产物，不要手改后长期维护。
+- 任何 prompt、skill、运行时契约改动后，必须执行：
   - `npm run sync:runtimes`
   - `npm run validate`
-- `meta/meta.md` is intentionally long. Reference it when needed; do not blindly duplicate the whole transcript into runtime prompts.
+- `meta/meta.md` 是理论总源，但它很长。引用即可，不要把整篇直播稿无脑塞进每个运行时文件。
 
-## Claude Capability Surfaces
+## 三、Claude Code 侧已经覆盖的能力面
 
-| Surface | Path | Purpose |
+| 能力面 | 路径 | 作用 |
 | --- | --- | --- |
-| Project memory | `CLAUDE.md` | Repository-level instructions for Claude Code |
-| Subagents | `.claude/agents/*.md` | 8 native Claude Code project subagents |
-| Skill | `.claude/skills/meta-theory/SKILL.md` | Reusable Meta_Kim workflow |
-| Hooks | `.claude/settings.json` + `.claude/hooks/*` | Safety and subagent context injection |
-| MCP | `.mcp.json` | Project-scoped MCP server definition |
+| 项目记忆 | `CLAUDE.md` | 仓库级规则与操作约束 |
+| 子代理 | `.claude/agents/*.md` | 8 个原生 Claude Code 子代理 |
+| Skill | `.claude/skills/meta-theory/SKILL.md` | 元理论工作流入口 |
+| Hooks | `.claude/settings.json` + `.claude/hooks/*` | 安全拦截、子代理上下文注入 |
+| MCP | `.mcp.json` | 项目级本地 MCP 服务挂载 |
 
-## Available Meta Agents
+## 四、8 个元代理
 
-| Agent | Purpose |
+| 代理 | 作用 |
 | --- | --- |
-| `meta-warden` | Coordination, quality gates, synthesis, meta-review |
-| `meta-genesis` | SOUL.md and core prompt architecture |
-| `meta-artisan` | Skill, tool, and capability matching |
-| `meta-sentinel` | Security boundaries, hooks, rollback rules |
-| `meta-librarian` | Memory, continuity, knowledge persistence |
-| `meta-conductor` | Workflow orchestration and rhythm control |
-| `meta-prism` | Quality forensics and drift detection |
-| `meta-scout` | External capability discovery and adoption |
+| `meta-warden` | 统筹、质量关卡、整合、元评审 |
+| `meta-genesis` | SOUL.md 与核心提示词架构 |
+| `meta-artisan` | Skill、工具、能力匹配 |
+| `meta-sentinel` | 安全边界、Hook、回滚规则 |
+| `meta-librarian` | 记忆、连续性、知识沉淀 |
+| `meta-conductor` | 工作流编排、节奏控制 |
+| `meta-prism` | 质量法医、漂移检测 |
+| `meta-scout` | 外部能力发现、引入评估 |
 
-## Working Loop
+## 五、工作闭环
 
-1. Edit the canonical source prompt or skill.
-2. Run `npm run sync:runtimes`.
-3. Run `npm run validate`.
-4. If the runtime contract changed, update `README.md` and `AGENTS.md`.
+1. 修改主源 prompt 或主源 skill。
+2. 运行 `npm run sync:runtimes`。
+3. 运行 `npm run validate`。
+4. 如果运行时契约发生变化，再更新 `README.md` 与 `AGENTS.md`。
 
-## Optional External Skill Pack
+## 六、可选外部技能包
 
-`install-deps.sh` installs optional Claude-oriented community skills into `~/.claude/skills/`.
+`install-deps.sh` 可把一些外部 Claude 生态技能安装到 `~/.claude/skills/`：
 
 ```bash
 bash install-deps.sh
 ```
 
-Those dependencies are accelerators, not the canonical Meta_Kim source.
+这些依赖是增强件，不是 Meta_Kim 的主源。
