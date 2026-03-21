@@ -38,15 +38,6 @@ Claude Code 只是当前最主要的主编辑运行时。
 
 Claude 侧所有实现，都应该朝它对齐，而不是机械复制它。
 
-## 外部参考
-
-除了仓库内主源，这个项目还有两个作者提供的外部参考：
-
-- 详细评测论文：<https://zenodo.org/records/18957649>
-- 通用模板、联系方式与支持入口：<https://github.com/KimYx0207/Claude-Code-x-OpenClaw-Guide-Zh>
-
-Claude 侧应把它们理解成补充背景，而不是运行时配置。
-
 ## Claude Code 这边真正要成立成什么样
 
 在 Claude Code 里，理想状态不是让用户记住 8 个元 agent。
