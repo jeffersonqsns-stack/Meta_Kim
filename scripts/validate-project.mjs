@@ -29,7 +29,19 @@ const forbiddenRuntimeMarkers = [
 
 function assert(condition, message) {
   if (!condition) {
-    throw new Error(message);
+    // Human-friendly: strip dev-path jargon from messages
+    const clean = message
+      .replace(/\.claude\/agents\//g, "Claude agent ")
+      .replace(/\.claude\/skills\//g, "Claude skill ")
+      .replace(/\.codex\/agents\//g, "Codex agent ")
+      .replace(/\.codex\/skills\//g, "Codex skill ")
+      .replace(/\.agents\/skills\//g, "Codex项目skill ")
+      .replace(/openclaw\/workspaces\//g, "OpenClaw workspace ")
+      .replace(/openclaw\/skills\//g, "OpenClaw skill ")
+      .replace(/shared-skills\//g, "shared-skill ")
+      .replace(/\.md /g, ".md ")
+      .replace(/\.toml /g, ".toml ");
+    throw new Error(clean);
   }
 }
 
@@ -147,6 +159,79 @@ async function validateRequiredFiles() {
   }
 }
 
+async function validateWorkflowContract() {
+  const contractPath = path.join(repoRoot, "contracts", "workflow-contract.json");
+  const contract = JSON.parse(await fs.readFile(contractPath, "utf8"));
+
+  assert(
+    contract.runDiscipline?.singleDepartmentPerRun === true,
+    "workflow-contract.json must enforce singleDepartmentPerRun."
+  );
+  assert(
+    contract.runDiscipline?.singlePrimaryDeliverable === true,
+    "workflow-contract.json must enforce singlePrimaryDeliverable."
+  );
+  assert(
+    contract.runDiscipline?.rejectMultiTopicRuns === true,
+    "workflow-contract.json must reject multi-topic runs."
+  );
+  assert(
+    contract.runDiscipline?.requireClosedDeliverableChain === true,
+    "workflow-contract.json must require a closed deliverable chain."
+  );
+
+  const requiredRunHeader = [
+    "department",
+    "primaryDeliverable",
+    "audience",
+    "freshnessRequirement",
+    "visualPolicy",
+    "handoffPlan"
+  ];
+  assert(
+    JSON.stringify(contract.runDiscipline?.requiredRunHeader ?? []) ===
+      JSON.stringify(requiredRunHeader),
+    "workflow-contract.json requiredRunHeader is out of policy."
+  );
+
+  for (const field of [
+    "todayTask",
+    "output",
+    "deliverableLink",
+    "qualityBar",
+    "referenceDirection",
+    "handoffTarget",
+    "lengthExpectation",
+    "visualOrAssetPlan"
+  ]) {
+    assert(
+      contract.runDiscipline?.requiredWorkerFields?.includes(field),
+      `workflow-contract.json requiredWorkerFields must include ${field}.`
+    );
+  }
+
+  for (const field of [
+    "verifyPassed",
+    "summaryClosed",
+    "singleDeliverableMaintained",
+    "deliverableChainClosed"
+  ]) {
+    assert(
+      contract.runDiscipline?.publicDisplayRequires?.includes(field),
+      `workflow-contract.json publicDisplayRequires must include ${field}.`
+    );
+  }
+
+  assert(
+    contract.departmentVisualPolicies?.game?.defaultMode === "generate_or_self_create",
+    "workflow-contract.json game visual policy must default to generate_or_self_create."
+  );
+  assert(
+    contract.departmentVisualPolicies?.ai?.defaultMode === "official_or_verified_reference",
+    "workflow-contract.json ai visual policy must default to official_or_verified_reference."
+  );
+}
+
 async function validateClaudeAgents() {
   const files = (await fs.readdir(claudeAgentsDir))
     .filter((file) => file.endsWith(".md"))
@@ -167,6 +252,34 @@ async function validateClaudeAgents() {
     );
     assertNoForbiddenMarkers(raw, filePath);
     ids.push(frontmatter.name);
+  }
+
+  const conductorPath = path.join(claudeAgentsDir, "meta-conductor.md");
+  const conductorRaw = await fs.readFile(conductorPath, "utf8");
+  for (const marker of [
+    "一次 run = 一个部门 = 一件事",
+    "唯一主交付物",
+    "handoff对象",
+    "视觉/素材策略"
+  ]) {
+    assert(
+      conductorRaw.includes(marker),
+      `meta-conductor.md must include ${marker}.`
+    );
+  }
+
+  const wardenPath = path.join(claudeAgentsDir, "meta-warden.md");
+  const wardenRaw = await fs.readFile(wardenPath, "utf8");
+  for (const marker of [
+    "一次 run 必须只有一个部门和一个主交付物",
+    "交付链纪律",
+    "公开展示纪律",
+    "视觉策略与部门性质一致"
+  ]) {
+    assert(
+      wardenRaw.includes(marker),
+      `meta-warden.md must include ${marker}.`
+    );
   }
 
   return ids;
@@ -629,24 +742,97 @@ async function validateFactoryRelease() {
   }
 }
 
+function step(num, total, label, detail = "") {
+  console.log(`\n[${num}/${total}] ${label}`);
+  if (detail) console.log(`    ${detail}`);
+}
+
+function pass(msg = "") {
+  console.log(`    ✓ ${msg}`);
+}
+
+function fail(msg) {
+  console.error(`    ✗ ${msg}`);
+}
+
 async function main() {
+  const TOTAL = 12;
+  let current = 1;
+
+  console.log("\n========================================");
+  console.log("  Meta_Kim Project Integrity Check");
+  console.log("========================================");
+
+  // 1. Required files
+  step(current++, TOTAL, "Checking required files", "README.md, CLAUDE.md, package.json, etc. (24 files)");
   await validateRequiredFiles();
+  pass("All 24 required files present");
+
+  // 2. Workflow contract
+  step(current++, TOTAL, "Validating workflow contract", "single-department run discipline, primary deliverable, closed deliverable chain");
+  await validateWorkflowContract();
+  pass("Workflow contract is valid");
+
+  // 3. Claude Code agent definitions
+  step(current++, TOTAL, "Validating Claude Code agent definitions", "frontmatter completeness + forbidden-marker check + boundary discipline");
   const agentIds = await validateClaudeAgents();
+  pass(`${agentIds.length} agents passed: ${agentIds.join(", ")}`);
+
+  // 4. OpenClaw workspace files
+  step(current++, TOTAL, "Validating OpenClaw workspace files", "10 required files per agent: BOOT/SOUL/SKILL, etc.");
   await validateOpenClawArtifacts(agentIds);
+  pass(`${agentIds.length} workspaces complete (${agentIds.length * 10} files)`);
+
+  // 5. SKILL.md cross-runtime sync
+  step(current++, TOTAL, "Checking SKILL.md cross-runtime sync", "Claude Code / Codex / OpenClaw / shared-skills (4 locations)");
   await validatePortableSkill();
+  pass("All 4 sync locations are in sync");
+
+  // 6. Codex agent definitions
+  step(current++, TOTAL, "Validating Codex agent definitions", "TOML format + name/description fields + config.example");
   await validateCodexArtifacts(agentIds);
+  pass(`${agentIds.length} Codex agents passed`);
+
+  // 7. npm scripts
+  step(current++, TOTAL, "Checking package.json scripts", "sync:runtimes / validate / eval:agents / verify:all, etc.");
   await validatePackageJson();
+  pass("All required scripts registered");
+
+  // 8. .gitignore
+  step(current++, TOTAL, "Checking .gitignore rules", "node_modules/ / meta/ / openclaw local config, etc.");
   await validateGitignore();
+  pass(".gitignore contains all necessary rules");
+
+  // 9. Claude Code settings
+  step(current++, TOTAL, "Checking Claude Code project settings", "permission deny rules / PreToolUse / SubagentStart hooks");
   await validateClaudeSettings();
+  pass("Claude Code hooks and permissions configured correctly");
+
+  // 10. MCP config
+  step(current++, TOTAL, "Checking MCP server config", "meta-kim-runtime service definition and startup command");
   await validateMcpConfig();
+  pass("MCP config is valid");
+
+  // 11. MCP self-test
+  step(current++, TOTAL, "Running MCP self-test", "start meta-runtime-server and verify agent count");
   await validateMcpSelfTest();
+  pass("MCP self-test passed");
+
+  // 12. Factory release artifacts
+  step(current++, TOTAL, "Checking factory release artifacts", "100 departments / 1000 specialists / 20 flagship / 1100 runtime packs");
   await validateFactoryRelease();
-  console.log(`Validation passed for ${agentIds.length} agents.`);
+  pass("Factory artifacts count and content match expectations");
+
+  console.log("\n========================================");
+  console.log(`  All ${TOTAL} checks passed`);
+  console.log(`  8 agents ready`);
+  console.log("========================================\n");
 }
 
 try {
   await main();
 } catch (error) {
-  console.error(error.message);
+  console.error("\n    Validation failed!");
+  console.error(`    ${error.message}\n`);
   process.exitCode = 1;
 }

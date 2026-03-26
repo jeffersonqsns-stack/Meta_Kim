@@ -10,6 +10,7 @@
 <p>
   <img alt="Runtime" src="https://img.shields.io/badge/runtime-Claude%20Code%20%7C%20Codex%20%7C%20OpenClaw-111827"/>
   <img alt="Method" src="https://img.shields.io/badge/method-Meta%20-%3E%20Organizational%20Mirroring%20-%3E%20Rhythm%20Orchestration%20-%3E%20Intent%20Amplification-0f766e"/>
+  <img alt="Skill" src="https://img.shields.io/badge/skill-meta--theory%20v1.0.3-7c3aed"/>
   <img alt="License" src="https://img.shields.io/badge/license-CC%20BY%204.0-f59e0b"/>
 </p>
 
@@ -61,6 +62,60 @@ Meta_Kim is about teaching AI systems to organize complex work before they answe
 - Industry layer: `20` industries, `100` department agents, `1000` specialists
 - Supported runtimes: Claude Code, Codex, OpenClaw
 - Primary behavior: amplify intent first, then execute and coordinate
+- Business run discipline: `one department -> one primary deliverable -> one closed handoff chain`
+
+## Quick Start (Clone to Working in 5 Minutes)
+
+### Prerequisites
+
+- **Node.js** v18+ (for sync, validate, and OpenClaw scripts)
+- **Git** (to clone)
+- **Claude Code CLI** (optional, only needed for `eval:agents`)
+- **OpenClaw CLI** (optional, only needed for `npm run prepare:openclaw-local`)
+
+### Step 1: Clone & Install
+
+```bash
+git clone <this-repo>
+cd Meta_Kim
+npm install
+```
+
+### Step 2: Sync Runtimes
+
+```bash
+npm run sync:runtimes
+```
+
+This synchronizes the 8 meta agents from `.claude/agents/` to all three runtime mirrors (Claude Code, Codex, OpenClaw). Run this **every time you modify an agent definition or SKILL.md**.
+
+### Step 3: Validate
+
+```bash
+npm run validate
+```
+
+Checks that all agent frontmatter is valid, SKILL.md is synced across all layers, and OpenClaw/Codex config is intact.
+
+**Expected output:** `Validation passed for 8 agents.`
+
+### Step 4: Run a Health Check
+
+```bash
+node scripts/agent-health-report.mjs
+```
+
+Gives you a quick read on all 8 agents: version, frontmatter completeness, boundary definitions, workspace files, skill sync status, and a composite health score.
+
+### Step 5: Start Using (in Claude Code)
+
+Open the repo with Claude Code and say:
+
+```text
+请以 meta-warden 为统一入口，先做意图放大，再判断是否需要调用其他元 agent。
+```
+
+Or describe a complex task directly — the system will automatically invoke the 8-stage governance flow.
 
 ## What This Project Is
 
@@ -144,6 +199,14 @@ The user-facing default is:
 
 The other seven meta agents are internal structure, not the public menu.
 
+Every valid business run must keep a single organizing thread:
+
+- one department
+- one primary deliverable
+- one closed handoff chain
+
+If a plan bundles unrelated goals into the same run, `meta-conductor` should reject it and `meta-warden` should keep it out of public display.
+
 ## The Eight Meta Agents
 
 - `meta-warden`: default entry, arbitration, synthesis
@@ -167,17 +230,38 @@ Meta_Kim keeps one operating logic while letting each runtime use its native int
 
 ## How To Use It
 
-### Default trigger
+### The 8-Stage Governance Flow
 
-The safest way to invoke the system is to route through the default front door.
+Every complex task goes through this pipeline automatically:
 
-Example:
-
-```text
-Use meta-warden as the entry point. Amplify the intent first, then decide which meta agents are needed.
+```mermaid
+flowchart TD
+    A["1. Critical<br/>追问澄清 — 追问不清的需求"] --> B["2. Fetch<br/>搜索现有能力 — 先找不做假设"]
+    B --> C["3. Execution<br/>执行 — 元接力链路"]
+    C --> D["4. Review<br/>评审 — 代码质量/UX/安全"]
+    D --> E["5. Meta-Review<br/>元评审 — 越界检测/架构合规"]
+    E --> F["6. Evolution<br/>意图放大 — 沉淀可复用模式"]
+    F --> G["输出统一结果"]
 ```
 
-### When to name a specialist meta agent
+**Three iron laws贯穿全程：**
+- **Critical > 猜测** — 需求不清先追问，不假设
+- **Fetch > 假设** — 先搜索验证，不假设存在
+- **Review > 信任** — 任何产出必须评审，不信任单次结果
+
+### Two Trigger Modes
+
+**Mode 1 — Auto-trigger (recommended for complex tasks):**
+
+Just describe a complex task. If it involves multi-file changes, the system **automatically** runs all 8 stages. No need to know the stages exist.
+
+Example: `"帮我实现一个用户认证系统"` → governance flow activates automatically.
+
+**Mode 2 — Manual specialist trigger:**
+
+Explicitly name a meta agent when you know exactly what you need.
+
+### Default trigger
 
 - prompt identity or `SOUL.md`: `meta-genesis`
 - skills, MCP, tool selection: `meta-artisan`
@@ -240,7 +324,7 @@ Meta_Kim/
 ├─ openclaw/       OpenClaw workspaces, template config, runtime mirrors
 ├─ factory/        Published industry library and runtime import packs
 ├─ images/         Public assets used by the README
-├─ scripts/        Sync, validation, MCP, evaluation, OpenClaw helper scripts
+├─ scripts/        Sync, validation, MCP, evaluation, OpenClaw helper, and agent health reporting scripts
 ├─ shared-skills/  Shared skill mirrors across runtimes
 ├─ AGENTS.md       Codex and cross-runtime guide
 ├─ CLAUDE.md       Claude Code guide
@@ -333,31 +417,37 @@ Run this after cloning if you want to use or validate the repo locally.
 
 Run this after changing canonical agents, skills, or runtime-facing config. It rebuilds the runtime mirrors for Claude Code, Codex, and OpenClaw.
 
+### `npm run validate`
+
+Run this to validate the canonical source files, agent definitions, SKILL.md sync, and OpenClaw/Codex configuration integrity.
+
+### `npm run eval:agents`
+
+Run this for runtime-level acceptance testing. It spawns each of the 8 meta agents and validates their boundary behavior against predefined test cases.
+
+### `npm run verify:all`
+
+Run this before publishing, shipping, or after substantial runtime changes. It performs the full validation and acceptance pass (validate + eval combined).
+
 ### `npm run prepare:openclaw-local`
 
 Run this only if you want to execute the OpenClaw side on your own machine.
 
-### `npm run verify:all`
+### `node scripts/agent-health-report.mjs`
 
-Run this before publishing, shipping, or after substantial runtime changes. It performs the full validation and acceptance pass.
+Run this for a quick health check of all 8 meta agents. Outputs a markdown report covering version, frontmatter completeness, boundary definitions, workspace files, skill sync status, and overall health score.
 
 ## Simplest Starting Path
 
-If you only want to understand the project:
+The [Quick Start section](#quick-start-clone-to-working-in-5-minutes) above gets you from clone to working in 5 minutes.
 
-- read `README.md`
-- read `CLAUDE.md`
-- read `AGENTS.md`
+For reading order if you just want to understand:
 
-If you want to verify that the repo is real and runnable:
+1. `README.md` (this file) — start here
+2. `CLAUDE.md` — Claude Code specific guide
+3. `AGENTS.md` — Codex and cross-runtime guide
 
-```bash
-npm install
-npm run sync:runtimes
-npm run verify:all
-```
-
-If you want to inspect the industry layer directly:
+For the industry agent library:
 
 - `factory/agent-library/`
 - `factory/flagship-complete/agents/`

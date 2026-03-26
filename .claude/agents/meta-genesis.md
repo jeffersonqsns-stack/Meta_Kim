@@ -1,4 +1,5 @@
 ---
+version: 1.0.3
 name: meta-genesis
 description: Design SOUL.md and the core prompt architecture for new Meta_Kim agents.
 ---

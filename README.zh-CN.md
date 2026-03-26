@@ -10,6 +10,7 @@
 <p>
   <img alt="Runtime" src="https://img.shields.io/badge/runtime-Claude%20Code%20%7C%20Codex%20%7C%20OpenClaw-111827"/>
   <img alt="Method" src="https://img.shields.io/badge/method-%E5%85%83%20%E2%86%92%20%E7%BB%84%E7%BB%87%E9%95%9C%E5%83%8F%20%E2%86%92%20%E8%8A%82%E5%A5%8F%E7%BC%96%E6%8E%92%20%E2%86%92%20%E6%84%8F%E5%9B%BE%E6%94%BE%E5%A4%A7-0f766e"/>
+  <img alt="Skill" src="https://img.shields.io/badge/skill-meta--theory%20v1.0.3-7c3aed"/>
   <img alt="License" src="https://img.shields.io/badge/license-CC%20BY%204.0-f59e0b"/>
 </p>
 
@@ -61,6 +62,60 @@ Meta_Kim 不是教 AI 多说，而是教 AI 先学会组织复杂任务。
 - 行业层：`20` 个行业、`100` 个部门 agent、`1000` 个 specialist
 - 运行时：Claude Code、Codex、OpenClaw
 - 目标：先做意图放大，再做执行与协作
+- 业务 run 纪律：`一个部门 -> 一个主交付物 -> 一条闭合交付链`
+
+## 快速上手（克隆后 5 分钟跑起来）
+
+### 环境要求
+
+- **Node.js** v18+（用于 sync、validate、OpenClaw 脚本）
+- **Git**（用于克隆项目）
+- **Claude Code CLI**（可选，仅在运行 `eval:agents` 时需要）
+- **OpenClaw CLI**（可选，仅在运行 `npm run prepare:openclaw-local` 时需要）
+
+### 第一步：克隆并安装
+
+```bash
+git clone <仓库地址>
+cd Meta_Kim
+npm install
+```
+
+### 第二步：同步三端
+
+```bash
+npm run sync:runtimes
+```
+
+这步把 `.claude/agents/` 里的 8 个 agent 同步到 Claude Code / Codex / OpenClaw 三端镜像。**每次改了 agent 定义或 SKILL.md 后都要跑。**
+
+### 第三步：验证完整性
+
+```bash
+npm run validate
+```
+
+校验 frontmatter 格式、SKILL.md 同步状态、OpenClaw/Codex 配置完整性。
+
+**期望输出：** `Validation passed for 8 agents.`
+
+### 第四步：快速健康度检查
+
+```bash
+node scripts/agent-health-report.mjs
+```
+
+查看 8 个 agent 的状态：版本号、frontmatter 完整性、边界定义、workspace 文件、skill 同步情况，综合健康分。
+
+### 第五步：开始使用（Claude Code）
+
+用 Claude Code 打开仓库，直接说：
+
+```text
+请以 meta-warden 为统一入口，先做意图放大，再判断是否需要调用其他元 agent。
+```
+
+或者直接描述一个复杂任务——系统会自动跑完 8 阶段治理流程。
 
 ## 这是什么项目
 
@@ -146,6 +201,14 @@ flowchart TD
 
 其它 7 个元 agent 是后台结构，不是面向用户的菜单。
 
+每一条有效的业务 run，都必须保持一条唯一主线：
+
+- 一个部门
+- 一个主交付物
+- 一条闭合交付链
+
+如果同一轮里塞进多个互不相干的目标，`meta-conductor` 应该直接打回，`meta-warden` 也不应让它进入公开展示态。
+
 ## 8 个元 agent
 
 - `meta-warden`：统一入口、统筹、仲裁、最终汇总
@@ -178,17 +241,38 @@ Meta_Kim 不是强行把三个运行时做成一模一样。
 
 ## 怎么用，怎么触发
 
-### 默认触发方式
+### 8 阶段治理流程
 
-如果你想用这套系统，最稳的方式就是直接让它走统一入口。
+每个复杂任务都会自动走这个流水线：
 
-示例：
-
-```text
-请以 meta-warden 为统一入口，先做意图放大，再判断是否需要调用其他元 agent。
+```mermaid
+flowchart TD
+    A["1. Critical<br/>追问澄清 — 追问不清的需求"] --> B["2. Fetch<br/>搜索现有能力 — 先找不做假设"]
+    B --> C["3. Execution<br/>执行 — 元接力链路"]
+    C --> D["4. Review<br/>评审 — 代码质量/UX/安全"]
+    D --> E["5. Meta-Review<br/>元评审 — 越界检测/架构合规"]
+    E --> F["6. Evolution<br/>意图放大 — 沉淀可复用模式"]
+    F --> G["统一汇总输出"]
 ```
 
-### 什么时候显式点名其他元 agent
+**三条铁律贯穿全程：**
+- **Critical > 猜测** — 需求不清先追问，不假设
+- **Fetch > 假设** — 先搜索验证，不假设存在
+- **Review > 信任** — 任何产出必须评审，不信任单次结果
+
+### 两种触发方式
+
+**方式一：自动触发（推荐用于复杂任务）**
+
+直接描述一个涉及多文件改动的复杂任务。系统**自动**跑完全部 8 阶段，不需要你了解这些阶段的存在。
+
+示例：`"帮我实现一个用户认证系统"` → 自动激活治理流程。
+
+**方式二：手动点名（你知道具体要什么时用）**
+
+显式点名某个元 agent。
+
+### 默认触发方式
 
 - 你要定义 prompt / persona / `SOUL.md`：点 `meta-genesis`
 - 你要做 skill / MCP / 工具匹配：点 `meta-artisan`
@@ -248,7 +332,7 @@ Meta_Kim/
 ├─ openclaw/       OpenClaw workspace、模板配置、运行时镜像
 ├─ factory/        发布版行业 agent 层与三端导入包
 ├─ images/         README 使用的公开图片资源
-├─ scripts/        同步、校验、MCP、自检、OpenClaw 准备脚本
+├─ scripts/        同步、校验、MCP、自检、OpenClaw 准备、agent 健康度报告脚本
 ├─ shared-skills/  跨运行时共享技能镜像
 ├─ AGENTS.md       Codex / 跨运行时入口说明
 ├─ CLAUDE.md       Claude Code 入口说明
@@ -346,42 +430,42 @@ Codex 的配置分两层：
 
 ### `npm run sync:runtimes`
 
-你改了主源 agent、skill、运行时配置之后执行。  
+你改了主源 agent、skill、运行时配置之后执行。
 作用是把主源重新同步成 Claude Code / Codex / OpenClaw 三端镜像。
 
-### `npm run prepare:openclaw-local`
+### `npm run validate`
 
-只有你准备在本机真正跑 OpenClaw 时才需要。  
-作用是补 OpenClaw 本地授权和状态准备。
+校验主源文件、agent 定义、SKILL.md 同步状态，以及 OpenClaw/Codex 配置完整性。
+
+### `npm run eval:agents`
+
+在运行时级别做验收测试。会启动 8 个元 agent，验证边界行为是否符合预设测试用例。
 
 ### `npm run verify:all`
 
-准备发布、提交、开源，或者刚改完运行时资产时执行。  
-作用是统一做校验和验收。
+准备发布、提交、开源，或者刚改完运行时资产时执行。
+作用是统一做校验和验收（validate + eval 合并）。
+
+### `npm run prepare:openclaw-local`
+
+只有你准备在本机真正跑 OpenClaw 时才需要。
+作用是补 OpenClaw 本地授权和状态准备。
+
+### `node scripts/agent-health-report.mjs`
+
+快速健康度检查，输出 markdown 报告，覆盖版本号、frontmatter 完整性、边界定义、workspace 文件状态、skill 同步状态和综合健康分。
 
 ## 最简单的开始方式
 
-### 只是想了解项目
+上面的 [快速上手章节](#快速上手克隆后-5-分钟跑起来) 已经包含了从克隆到跑起来的完整步骤。
 
-先读这三个文件：
+如果只是了解项目，读这三个文件的顺序：
 
-- `README.md`
-- `CLAUDE.md`
-- `AGENTS.md`
+1. `README.zh-CN.md`（本文件）——从这里开始
+2. `CLAUDE.md` ——Claude Code 专用指南
+3. `AGENTS.md` ——Codex 和跨运行时指南
 
-### 想验证项目可运行
-
-在仓库根目录执行：
-
-```bash
-npm install
-npm run sync:runtimes
-npm run verify:all
-```
-
-### 想看已经做好的行业 agent
-
-直接看：
+如果想看做好的行业 agent：
 
 - `factory/agent-library/`
 - `factory/flagship-complete/agents/`

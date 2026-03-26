@@ -82,6 +82,7 @@ After changing canonical source files:
 1. run `npm run sync:runtimes`
 2. run `npm run validate`
 3. run `npm run eval:agents` when you need runtime-level acceptance
+4. run `npm run verify:all` for full validation + acceptance pass
 
 ## Industry Agent Foundry
 

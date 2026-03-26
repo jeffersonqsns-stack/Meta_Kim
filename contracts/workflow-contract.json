@@ -106,6 +106,94 @@
       "requiresVerifiedRun": true
     }
   },
+  "runDiscipline": {
+    "singleDepartmentPerRun": true,
+    "singlePrimaryDeliverable": true,
+    "rejectMultiTopicRuns": true,
+    "rejectDetachedWorkerTasks": true,
+    "requireClosedDeliverableChain": true,
+    "reviewMustConsolidate": true,
+    "reviewOutputProtocol": {
+      "format": "deliverable-frontmatter",
+      "marker": "<!--deliverable",
+      "endMarker": "-->",
+      "requiredFields": ["title", "summary", "workers"],
+      "workersFields": ["name", "task"],
+      "separator": "---",
+      "sections": ["frontmatter", "consolidatedBody", "separator", "perWorkerScores"],
+      "description": "Review phase output must start with a deliverable frontmatter block containing title, summary, and worker roles in YAML. After the frontmatter, the consolidated deliverable body follows. A --- separator divides the body from per-worker scores."
+    },
+    "requiredRunHeader": [
+      "department",
+      "primaryDeliverable",
+      "audience",
+      "freshnessRequirement",
+      "visualPolicy",
+      "handoffPlan"
+    ],
+    "requiredWorkerFields": [
+      "todayTask",
+      "output",
+      "deliverableLink",
+      "qualityBar",
+      "referenceDirection",
+      "handoffTarget",
+      "lengthExpectation",
+      "visualOrAssetPlan"
+    ],
+    "publicDisplayRequires": [
+      "verifyPassed",
+      "summaryClosed",
+      "singleDeliverableMaintained",
+      "deliverableChainClosed",
+      "consolidatedDeliverablePresent"
+    ]
+  },
+  "departmentVisualPolicies": {
+    "game": {
+      "defaultMode": "generate_or_self_create",
+      "preferredSources": [
+        "ai-generated visual",
+        "self-created concept sketch",
+        "in-engine capture"
+      ],
+      "requiresVisualPairingFor": [
+        "campaign copy",
+        "event copy",
+        "promo narrative",
+        "worldbuilding brief"
+      ],
+      "fallbackMode": "reference_search_only_when_factual_material_is_required"
+    },
+    "ai": {
+      "defaultMode": "official_or_verified_reference",
+      "preferredSources": [
+        "official screenshot",
+        "official diagram",
+        "product UI capture",
+        "verified reference image"
+      ],
+      "requiresVisualPairingFor": [
+        "tool report",
+        "product comparison",
+        "launch writeup",
+        "model capability brief"
+      ],
+      "fallbackMode": "generate_original_explainer_visual_only_when_no_official_material_exists"
+    },
+    "default": {
+      "defaultMode": "fit_department_nature",
+      "preferredSources": [
+        "verified reference",
+        "self-created asset"
+      ],
+      "requiresVisualPairingFor": [
+        "public-facing copy",
+        "campaign output"
+      ],
+      "fallbackMode": "explicitly_declare_why_no_visual_deliverable_is_needed"
+    }
+  },
   "freshness": {
     "idealDays": 7,
     "recentDays": 30,

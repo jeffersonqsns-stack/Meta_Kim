@@ -68,6 +68,10 @@ So in practice:
   - `npm run validate`
 - If you need runtime-level acceptance instead of file-level validation, also run:
   - `npm run eval:agents`
+- For full validation + acceptance, run:
+  - `npm run verify:all`
+- For a quick health check of all 8 meta agents:
+  - `node scripts/agent-health-report.mjs`
 
 ## One-Line Summary
 

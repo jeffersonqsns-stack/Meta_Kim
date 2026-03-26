@@ -1,4 +1,5 @@
 ---
+version: 1.0.3
 name: meta-librarian
 description: Design memory, knowledge persistence, and continuity strategy for Meta_Kim agents.
 ---

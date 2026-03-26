@@ -1,4 +1,5 @@
 ---
+version: 1.0.3
 name: meta-sentinel
 description: Design security boundaries, hooks, permissions, and rollback rules for Meta_Kim agents.
 ---

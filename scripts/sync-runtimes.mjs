@@ -735,9 +735,37 @@ async function main() {
     return;
   }
 
-  console.log(
-    `Synced ${agents.length} agents into OpenClaw runtime assets with local model ${localOpenClawModel}.`
-  );
+  const byLayer = {
+    "Claude Code/.claude/agents/": changedFiles.filter((f) => f.startsWith(".claude/agents/")).length,
+    "Claude Code/.claude/skills/": changedFiles.filter((f) => f.startsWith(".claude/skills/")).length,
+    "Codex/.codex/agents/": changedFiles.filter((f) => f.startsWith(".codex/agents/")).length,
+    "Codex/.codex/skills/": changedFiles.filter((f) => f.startsWith(".codex/skills/")).length,
+    "Codex/.agents/skills/": changedFiles.filter((f) => f.startsWith(".agents/skills/")).length,
+    "OpenClaw/openclaw/workspaces/": changedFiles.filter((f) => f.startsWith("openclaw/workspaces/")).length,
+    "OpenClaw/openclaw/skills/": changedFiles.filter((f) => f.startsWith("openclaw/skills/")).length,
+    "OpenClaw/shared-skills/": changedFiles.filter((f) => f.startsWith("shared-skills/")).length,
+    "OpenClaw/model:": 0,
+  };
+
+  // Group by runtime
+  const groups = {
+    "Claude Code": ["Claude Code/.claude/agents/", "Claude Code/.claude/skills/"],
+    "Codex": ["Codex/.codex/agents/", "Codex/.codex/skills/", "Codex/.agents/skills/"],
+    "OpenClaw": ["OpenClaw/openclaw/workspaces/", "OpenClaw/openclaw/skills/", "OpenClaw/shared-skills/", "OpenClaw/model:"],
+  };
+
+  for (const [group, keys] of Object.entries(groups)) {
+    console.log(`${group}:`);
+    for (const key of keys) {
+      if (key === "OpenClaw/model:") {
+        console.log(`  model: ${localOpenClawModel}`);
+      } else {
+        const count = byLayer[key] ?? 0;
+        const relPath = key.split("/").slice(1).join("/");
+        console.log(`  ${relPath} ${count} files`);
+      }
+    }
+  }
 }
 
 await main();
