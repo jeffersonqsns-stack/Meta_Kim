@@ -105,7 +105,21 @@ npm run sync:runtimes
 
 This synchronizes the 8 meta agents from `.claude/agents/` to all three runtime mirrors (Claude Code, Codex, OpenClaw). Run this **every time you modify an agent definition or SKILL.md**.
 
-### Step 3: Discover Global Capabilities
+### Step 3: Install Meta-Skill Dependencies
+
+```bash
+npm run deps:install
+```
+
+Installs the 8 community meta-skills that Meta_Kim depends on (agent-teams-playbook, findskill, superpowers, everything-claude-code, planning-with-files, cli-anything, gstack, skill-creator) into `~/.claude/skills/`. **Required on first setup.**
+
+To **update** all dependencies to the latest version:
+
+```bash
+npm run deps:update
+```
+
+### Step 4: Discover Global Capabilities
 
 ```bash
 npm run discover:global
@@ -118,7 +132,7 @@ Scan scope:
 - **OpenClaw** (`~/.openclaw/`): agents, skills, hooks, commands
 - **Codex** (`~/.codex/`): agents, skills, commands
 
-### Step 4: Validate
+### Step 5: Validate
 
 ```bash
 npm run validate
@@ -128,7 +142,7 @@ Checks that all agent frontmatter is valid, SKILL.md is synced across all layers
 
 **Expected output:** `Validation passed for 8 agents.`
 
-### Step 5: Run a Health Check
+### Step 6: Run a Health Check
 
 ```bash
 node scripts/agent-health-report.mjs
@@ -136,7 +150,7 @@ node scripts/agent-health-report.mjs
 
 Gives you a quick read on all 8 agents: version, frontmatter completeness, boundary definitions, workspace files, skill sync status, and a composite health score.
 
-### Step 6: Start Using (in Claude Code)
+### Step 7: Start Using (in Claude Code)
 
 Open the repo with Claude Code and just describe what you need:
 
@@ -347,6 +361,22 @@ So:
 - `.codex/` is the repo content Codex reads directly
 - `codex/` is only the example directory for wiring `~/.codex/config.toml`
 
+## Hooks (Claude Code)
+
+Meta_Kim ships 7 project-level hooks in `.claude/settings.json`:
+
+| Hook | Type | Purpose |
+|------|------|---------|
+| `block-dangerous-bash.mjs` | PreToolUse/Bash | Block destructive commands (rm -rf, DROP TABLE, force-push) |
+| `pre-git-push-confirm.mjs` | PreToolUse/Bash | Remind to review before git push |
+| `post-format.mjs` | PostToolUse/Edit,Write | Auto-format JS/TS files with prettier |
+| `post-typecheck.mjs` | PostToolUse/Edit,Write | Run tsc --noEmit after editing .ts/.tsx |
+| `post-console-log-warn.mjs` | PostToolUse/Edit,Write | Warn about console.log in edited files |
+| `subagent-context.mjs` | SubagentStart | Inject project context into spawned subagents |
+| `stop-console-log-audit.mjs` | Stop | Audit all modified files for console.log before session ends |
+
+Codex and OpenClaw use their own native mechanisms (developer_instructions and SOUL.md respectively) for equivalent behavior.
+
 ## Commands
 
 ### `npm install`
@@ -366,6 +396,14 @@ Run this to scan and index your globally-installed capabilities across all three
 - **Codex** (`~/.codex/`): agents, skills, commands
 
 Generates `.claude/capability-index/global-capabilities.json` for use by the meta-theory skill's Fetch phase. This allows the meta architecture to see and integrate with your global capabilities.
+
+### `npm run deps:install`
+
+Install the 8 community meta-skills that Meta_Kim depends on. Runs `install-deps.sh` under the hood.
+
+### `npm run deps:update`
+
+Update all installed meta-skill dependencies to the latest version. Equivalent to `bash install-deps.sh --update`.
 
 ### `npm run validate`
 

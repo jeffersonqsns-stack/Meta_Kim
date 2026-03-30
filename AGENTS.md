@@ -60,6 +60,10 @@ The others are backstage specialists, not the public menu.
 - `meta-prism`: quality review and drift detection
 - `meta-scout`: external capability discovery and evaluation
 
+## Project-Level Hooks (Claude Code)
+
+7 hooks in `.claude/settings.json` — PreToolUse (dangerous bash blocker, git push confirm), PostToolUse (auto-format, typecheck, console.log warn), SubagentStart (context injection), Stop (console.log audit).
+
 ## Canonical vs Derived Assets
 
 Preferred edit targets:

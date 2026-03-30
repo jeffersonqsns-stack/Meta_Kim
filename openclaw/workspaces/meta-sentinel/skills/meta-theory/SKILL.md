@@ -1,6 +1,6 @@
 ---
 name: meta-theory
-version: 1.3.0
+version: 1.4.0
 author: KimYx0207
 trigger: "元理论|元架构|元兵工厂|最小可治理单元|组织镜像|节奏编排|意图放大|事件牌组|出牌|SOUL.md|四种死法|五标准|agent职责|agent边界|agent拆分|agent设计|agent创建|agent治理|meta architecture|agent governance|intent amplification|meta-theory|meta arsenal|smallest governable unit|organizational mirror|rhythm orchestration|card deck|card play|four death patterns|five criteria|agent design|agent split|agent creation"
 tools:
@@ -374,399 +374,25 @@ Use the currently available question/confirmation mechanism to present the compl
 ### Scenario
 The user provides a complex development task or requests execution according to the meta architecture.
 
-### "What It Is Not" Guardrails (preventing misuse)
-
-- Meta ≠ role naming: calling something "frontend agent" doesn't make it a meta; naming without clear boundaries is just packaging
-- Meta ≠ Omnipotent Executor Meta: stuffing all responsibilities into one agent isn't strength; clear division of labor is maturity
-- Organizational Mirror ≠ metadata/ORM: it's not a technical term — it's an architectural design method for collaboration relationships between metas, responsibility boundaries, and who takes the field first
-- Meta ≠ framework complexity: simple scenarios don't need meta decomposition; direct execution is more efficient — meta is a governance tool, not decoration
-- Meta ≠ once-and-for-all: meta boundaries need to be adjusted as the system evolves; they aren't defined once and never changed
-
-### Complexity Routing
-
-```
-IF <2 file changes → Simple: Direction → Execution → Review → Verification → Feedback (5 steps)
-IF 2-5 files → Medium: Direction → Planning → Execution → Review → Meta-Review → Revision → Verification → Feedback (8 steps)
-IF >5 files / multiple modules → Complex: all 10 steps
-```
-
-**Routing Upgrade Conditions**:
-- File count increases from <2 to >2 → Simple upgrades to Medium
-- Cross-module dependencies appear → Medium upgrades to Complex
-- Sentinel reports a security issue → any level upgrades to Complex
-- Prism discovers a systemic issue → Medium upgrades to Complex
-
-### Task Routing Decision Tree
-
-```
-IF only involves UI/styles/components → spawn Frontend agent
-IF only involves API/DB/Auth → spawn Backend agent
-IF involves ≥2 domains → decompose then spawn in parallel
-IF code changes complete → must spawn Quality for verification
-IF no matching agent found → trigger Type B (creation pipeline)
-```
-
-**Note**: Do not hardcode specific agent names; first use Glob to search `.claude/agents/*.md` to confirm existence.
-
-### Complete 8-Stage Flow
-
-**Stage 1: Critical Analysis**
-- **Task Classification Routing** (Q/A/P/S four categories, Critical's first step):
-
-  | Category | Determination Criteria | Execution Path |
-  |----------|----------------------|----------------|
-  | **Q** Query | No code changes needed, just answer questions | Answer directly, skip subsequent stages |
-  | **A** Action | Clear, specific execution task (fix bug, add feature, deploy) | → Orchestration Layer decomposition → dispatch to Execution Layer |
-  | **P** Planning | Needs design plan before execution (new module, architecture adjustment) | → Plan first → decompose into multiple A-tasks → Dispatch one by one |
-  | **S** Strategic | Involves global decisions, cross-system impact, long-term direction | → Warden arbitration → may trigger Type B creation pipeline |
-
-  Classification output field: `taskClass: Q|A|P|S`
-
-- **Skip-Level Self-Reflection Gate** (Q-class skips, A/P/S-class must execute):
-  > Core question: **Should I be doing this, or should I dispatch it?**
-
-  Self-check list:
-  - [ ] Is the current role an "Execution Layer"? (Yes → Skip-Level suspicion, should dispatch to the corresponding execution agent)
-  - [ ] Does the task involve writing code / modifying files? (Yes → must delegate to Execution Layer; meta-theory does not execute directly)
-  - [ ] Am I "conveniently" making decisions for the Execution Layer? (Yes → only provide constraints; let the Execution Layer judge implementation details autonomously)
-  - [ ] Did the previous round also do a similar task? (Yes → check if a Skip-Level pattern is forming, record Scars)
-
-  Skip-Level determination:
-  ```
-  IF self-check has ≥1 hit AND taskClass = A
-    → Mark as "should-dispatch task"
-    → Assemble task package (context + constraints + deliverables)
-    → Hand to Conductor for orchestration → dispatch to Execution Layer
-    → Record Scars (if Skip-Level indeed occurred)
-  ```
-
-- **Complexity Routing**: count file changes + ask how many modules/layers are involved
-  - ≥2 file changes OR involves ≥2 different modules → Medium or above, follow the complete flow
-  - ≥5 file changes OR spans frontend/backend/database → Complex, add Meta-Review
-  - 1 file, pure logic/style/comments → Simple, skip planning, execute + Review directly
-- **Follow-up Probe Strategy** (max 2 rounds, **Early Exit Condition**: if Round 1 answers already satisfy any of the following, skip subsequent probes):
-  - User specified specific file paths
-  - User specified ≥2 acceptable deliverables
-  - User explicitly said "just do this, don't worry about the rest"
-  - After Round 1 answer, task granularity ≤2 sub-tasks
-  - Each round focuses on one dimension:
-    - Round 1: Ask about **scope** — "Which specific scenarios need support? Which can be deferred?"
-    - Round 2: Ask about **priorities** — "If time is tight, which parts can be cut?"
-  - Still vague after 2 rounds → record assumptions, execute directly, mark "unconfirmed assumptions" in output
-- **Abstraction** — Translate the "feature" the user described into "what type of meta is needed"
-  Output format:
-  - [ ] Task classification: Q / A / P / S
-  - [ ] Skip-Level Self-Reflection: pass / should-dispatch (with rationale)
-  - [ ] Capability type: frontend interaction / backend logic / data persistence / security validation / orchestration coordination / meta governance
-  - [ ] Change layer: new file / existing file modification / configuration file / cross-layer change
-  - [ ] Governance intensity: 1 (single file) → 2 (multiple files same layer) → 3 (cross-layer) → 4 (system-wide)
-
-**Stage 2: Fetch Search** (each item must be executed, not "if applicable")
-- **Layer 1: In-Project Search** (primary project source)
-  - Search existing agents: `Glob: .claude/agents/*.md`
-    # ⚠️ Must verify: read each file returned by Glob, check if it contains `name:` YAML frontmatter
-    # Has `name:` → valid agent, can be recommended; no `name:` → skip that file, continue to the next
-    # Rationale: .md files without valid YAML frontmatter will not be registered as agents by Claude Code
-  - Search existing skills: `Glob: .claude/skills/*/SKILL.md`
-  - Search MCP configuration: `Glob: .mcp.json`
-  - Search project meta information: `Glob: CLAUDE.md`
-  - Search historical similar tasks: `Bash: git log --oneline --all -- "{user-requirement-keywords}" | head -20`
-    # Note: keywords are the core nouns from user input, e.g. "login", "permissions", "agent creation"
-
-- **Layer 2: Global Capability Search** (cross-platform discovery)
-  - Read capability index: first check if `.claude/capability-index/global-capabilities.json` exists
-  - If not → run `node scripts/discover-global-capabilities.mjs` to generate the index
-  - Extract from the index:
-    - Claude Code global agents (`~/.claude/agents/*.md`)
-    - Claude Code global skills (`~/.claude/skills/*/SKILL.md`)
-    - OpenClaw global agents/skills (if accessible)
-    - Codex global agents/skills (if accessible)
-  - **Platform Difference Note**: invocation methods for global capabilities vary by platform
-    - Claude Code: use `Agent` tool's `subagent_type` parameter
-    - OpenClaw: use `sessions_send` tool
-    - Codex: use platform-specific agent invocation method
-
-- **Layer 3: MCP Server Query** (dynamic capabilities)
-  - Query registered MCP server capabilities: via `mcp__meta_kim_runtime__list_meta_agents` and similar tools
-  - Check if external MCP provides additional agents/skills
-
-- **Match Scoring**: iterate through found agents/skills (project + global + MCP), scoring 0-3 on two dimensions:
-  - **Capability Match** (overlap between input requirements and skill description)
-  - **Trigger Condition Match** (current system state vs agent trigger conditions: user input / environment state / path branching / risk signals / result quality / user pause)
-  - **Platform Availability** (whether the current runtime can invoke this capability)
-  - 3 = perfect match, use directly
-  - 1-2 = partial match, use + note the gaps to supplement
-  - 0 = no match, trigger Type B creation pipeline
-
-**Stage 3: Critical Decision**
-- Found a **single** match → verify it fits within the "Own" boundary → select that agent
-- **Partial match** (both agents score 1-2):
-  - Compare the coverage gaps of both agents
-  - Select the agent with greater coverage
-  - Note the gaps in the output and ask the user to confirm who fills them
-  - No user response → default to the greater-coverage agent filling the gap
-- Not found → trigger Type B creation pipeline
-
-**Stage 4: Execution**
-
-### ⚠️ Core Rule: meta-theory Must Not Write Code Directly!
-
-**meta-theory MUST NOT**:
-- ❌ Directly use Edit/Write tools to modify source code files
-- ❌ Write code or modify code itself
-- ❌ Use "simple task" as an excuse to skip agent invocation
-
-**meta-theory MUST**:
-- ✅ Only be responsible for: task analysis → agent selection → result aggregation
-- ✅ All Execution Layer work must be delegated to corresponding agents via the Agent tool
-
----
-
-### Agent Invocation Rules (Based on Fetch Results, No Hardcoding)
-
-**⚠️ Iron Rule: Dynamically determine which agent to invoke from the Fetch stage results!**
-
-1. **Review Fetch stage search results** — Stage 2 already searched:
-   - In-project agents: `.claude/agents/*.md`
-   - Global capability index: `.claude/capability-index/global-capabilities.json`
-   - MCP server capabilities
-   - Each found agent has a match score (0-3)
-
-2. **Invocation Priority** (sorted by match score):
-   ```
-   IF Fetch found a 3 (perfect match) → invoke that agent directly
-   IF Fetch found 1-2 (partial match) → select highest match + note gaps
-   IF Fetch found no match (0) → trigger Type B creation pipeline
-   ```
-
-3. **Invocation Method** (by agent source):
-
-   | Agent Source | Invocation Method |
-   |-------------|-------------------|
-   | **Global agent** | `Agent(subagent_type='<agent's name field>')` |
-   | **Project-specific agent** | `Agent(name='<project-agent-filename>', prompt='...')` or describe the task directly |
-   | **MCP-provided agent** | Use MCP tools (per platform convention) |
-
-4. **Example** (for reference only; actual invocation is based on Fetch results):
-
-   ```
-   Assume Fetch stage found:
-   - Global has code-reviewer (match score 3)
-   - Global has frontend-developer (match score 2)
-
-   Then invoke:
-   Agent(subagent_type='code-reviewer', prompt="Review this code...")
-   Agent(subagent_type='frontend-developer', prompt="Implement this component...")
-   ```
-
-**Do not hardcode agent names!** Different users' global environments may not have specific agents.
-
----
-
-### Execution Flow
-
-**Step 1: Task Decomposition**
-
-Decompose Stage 1's complexity analysis results into independent sub-tasks:
-
-```
-Sub-task format:
-- ID: Task number
-- Type: frontend/backend/typescript/security/testing/etc.
-- Description: What specifically to do
-- File scope: Which files are involved
-- Owner: Responsible agent type
-```
-
-**Step 2: Parallel/Sequential Decision**
-
-```
-IF sub-tasks' file sets do not overlap
-  → Invoke multiple Agent tools in parallel (within the same message)
-ELSE (file sets overlap)
-  → Invoke sequentially; lock file declaration after the first change completes
-```
-
-**Step 3: Delegated Execution**
-
-For each sub-task, use the Agent tool:
-
-```
-Agent(
-  subagent_type="<corresponding-agent-type>",
-  prompt="""
-  Task description: [sub-task description]
-  File scope: [specific file paths]
-  Constraints: [boundaries, dependencies, etc.]
-  """
-)
-```
-
-**Step 4: Result Aggregation**
-
-After all agents complete, aggregate:
-- Which files were modified
-- Whether there are conflicts to resolve
-- Whether supplementary execution is needed
-
----
-
-### Removal of "Simple Task" Shortcut Execution
-
-**Old logic (deprecated)**:
-```
-IF <2 file changes → Simple: Direction → Execution → Review → Verification → Feedback
-```
-
-**New logic**:
-```
-No matter how simple, Execution Layer tasks must be completed through agents.
-meta-theory is only responsible for analysis, agent selection, and result aggregation.
-```
-
-> **Rationale**: If meta-theory can "execute simple tasks directly", then:
-> 1. Blurred boundaries — what counts as "simple"? 2 lines of code is also called simple
-> 2. Responsibility confusion — meta-theory becomes an "executor", violating governance framework design
-> 3. No traceability — directly executed code has no agent signature, making accountability impossible
-
----
-
-### Meta Relay Chain (conceptual explanation)
-
-Metas relay by responsibility rather than all taking the field simultaneously:
-
-```
-Task Understanding Meta (clarification)
-  → Repository Awareness Meta + Retrieval Meta (scouting)
-  → Solution Meta (path)
-  → Execution Layer agents (modify code) ← invoked via Agent tool
-  → Validation Meta (acceptance)
-  → Explanation Meta (report)
-```
-
-Simple tasks can Skip Station for intermediate metas, but the chain order must not be disrupted.
-
-**Stage 5: Review** (each dimension must be executed, not "if applicable")
-- **Skip-Level Execution Retrospective Detection** (Review's first step):
-  > Check whether, in this round of execution, the Decision Layer / Orchestration Layer directly did Execution Layer work.
-
-  Retrospective check:
-  - [ ] Who wrote this round's code changes? (If meta-theory/Warden/Conductor directly used Edit/Write → Skip-Level)
-  - [ ] Were there execution agents that should have been invoked but weren't? (→ Dispatch omission)
-  - [ ] Task classified as A/P/S but didn't go through Agent tool delegation? (→ Skip-Level execution)
-  - [ ] Was the Critical stage's Skip-Level Self-Reflection result respected? (→ Self-Reflection failure)
-
-  Skip-Level handling:
-  ```
-  IF Skip-Level execution detected
-    → Record Scar (type, trigger condition, root cause)
-    → Assess impact (did result quality degrade as a result)
-    → IF impact occurred → hand to execution agent for re-verification
-    → IF impact did not occur → mark as "near miss", record to prevent recurrence
-  ```
-- **Who reviews**: **The executor does not self-review**. Priority:
-  1. If code-reviewer agent exists → spawn code-reviewer for code quality review
-  2. If security-reviewer agent exists → spawn security-reviewer for security review
-  3. No specialized agent → the executor reviews themselves, but mark "self-review" in the output and explain the review perspective
-- **Code Quality**: output review report per file, each containing:
-  - Type safety (any / implicit any / type assertions)
-  - Error handling (try/catch coverage and fallback strategy)
-  - Permission boundaries (which external APIs / file systems / network requests were called)
-  - Code reuse (duplicate logic, DRY detection)
-- **UX Experience + Communication Cost Check**: check UI-related files for:
-  - Accessibility (keyboard navigation focus-visible, aria-label, aria-live)
-  - Loading states (skeleton screens vs pure spinners)
-  - Responsiveness (mobile breakpoints)
-  - **Information push reasonableness**: Is this message helping the user move forward, or is the system just making its presence known?
-    > Ask yourself: is the attention competition cost > benefit? Is there priority pollution? Is the action probability diluted or enhanced?
-    > Four communication costs: attention competition (push notifications competing for user attention), priority pollution (user assumes system pushes are more important than current task), short-term memory burden (each message increases cognitive load), action probability dilution (too many cards makes the user inclined to do nothing)
-- **Send/Don't Send Decision**: Before dealing a card, must confirm the "Three Haves" — does this push reduce user uncertainty? does it improve clarity of the next action? does it avoid interrupting the user's current main task? If any of the three is unmet → don't send.
-- **Security Scan**: check for:
-  - Hardcoded secrets (API key / token / password)
-  - Unvalidated user input (parameter validation)
-  - SQL injection / XSS risks
-  - If security-reviewer agent exists → trigger; if not → use Grep to search for common vulnerability patterns
-
-**Stage 6: Meta-Review** (each check item must be executed)
-- **Boundary Violation Detection**: scan files changed in this round, check each file:
-  - Did any code logic fall into another agent's "Own" scope?
-  - Was any file claimed for ownership by two agents simultaneously?
-  - If meta-prism agent exists → trigger; if not → use Grep to search for conflict keywords
-- **Architecture Compliance**: scan changes for violations of:
-  - KISS (single file <500 lines? functions <50 lines?)
-  - DRY (is there duplicate logic >3 occurrences?)
-  - SOLID (do classes/modules show obvious single-responsibility violations?)
-
-**Stage 7: Revision** (if needed)
-- Revise based on review feedback, resubmit for Review, maximum 2 rounds
-
-**Stage 8: Evolution — Intent Amplification**
-
-> Framework main thread: Meta (split into Smallest Governable Units) → Organizational Mirror (collaboration relationships and responsibility boundaries between metas) → Rhythm Orchestration (when to play cards, which cards to play) → Intent Amplification (single results codified into reusable patterns)
-
-6-dimension evolution detection (must execute after each task completion):
-
-| Dimension | What to Detect | Corresponding Main Axis |
-|-----------|---------------|------------------------|
-| Pattern reuse | Can this solution be abstracted into a reusable pattern? | → Codify as new meta |
-| Agent boundaries | Are existing agent boundaries still reasonable? Need to split/merge? | → Organizational Mirror restructuring |
-| Guidance optimization | Can the user interaction path be shorter and smoother? | → Rhythm Orchestration optimization |
-| Process bottlenecks | Which step is slowest / most error-prone? | → Rhythm Orchestration adjustment |
-| Capability coverage | Have any new capability gaps been discovered? | → Create new meta |
-| **Scars codification** | Did this round have Skip-Level execution / Boundary Violation / process defects? | → Structured recording → prevent recurrence |
-
-**Detection is not the end — detection results must be converted into amplification operations**:
-
-| Dimension | Detection Result | Amplification Operation |
-|-----------|-----------------|------------------------|
-| Pattern reuse | Reusable pattern found | → Extract as Skill/template → register into Artisan candidate pool |
-| Agent boundaries | Boundaries unreasonable | → Trigger split/merge → follow Type B creation pipeline |
-| Guidance optimization | Interaction path redundant | → Update Guidance Card trigger conditions → optimize Follow-up Probe strategy |
-| Process bottlenecks | Bottleneck found | → Adjust Card Deck priority → add parallel or Skip conditions |
-| Capability coverage | Gap discovered | → Create new meta/Skill → or invoke Scout to search for external tools |
-| **Scars codification** | Skip-Level / Boundary Violation / process defect detected | → Write to Scars record → update Critical Self-Reflection checklist → prevent recurrence |
-
-For detailed detection tables, see `references/dev-governance.md`; for evolution amplification operations, see `references/intent-amplification.md`.
-
-### Scars Structured Recording Format
-
-When Evolution's Scars codification dimension detects an issue, record it in the following format:
-
-```yaml
-scar:
-  id: "{date}-{category}-{short-desc}"    # e.g. "2026-03-21-overstep-dispatch-skipped"
-  type: enum                               # overstep | boundary-violation | process-gap | false-positive
-  triggered_by: "{task_id_or_context}"
-  what_happened: "One-sentence description of what happened"
-  root_cause: "Why it happened (not the surface reason)"
-  impact: "none | degraded | recovered | critical"
-  prevention_rule: "Specific rule to execute next time the same situation arises"
-  updated_critical_checklist: true/false   # Whether the Critical Self-Reflection checklist needs updating
-```
-
-Scars type descriptions:
-- **overstep**: Decision Layer / Orchestration Layer directly executed Execution Layer work
-- **boundary-violation**: Agent operated beyond its "Own" scope
-- **process-gap**: Missing necessary Gate or check in the process
-- **false-positive**: Self-Reflection judged as Skip-Level but was actually reasonable (record to prevent over-self-checking)
-
-### Event Card Deck
-
-| Card | Trigger Condition | Action |
-|------|-------------------|--------|
-| Scope Contraction Card | Environment state trigger: repository too large / multiple files with same name / historical implementation branching | First ask "which version to change this time", then execute |
-| Guidance Card | Requirements vague | Follow-up Probe 2 rounds |
-| Direction Card | Requirements clear | Record intent |
-| Planning Card | High complexity | Task decomposition |
-| Execution Card | Planning complete | Assign tasks |
-| Review Card | Execution complete | Quality review |
-| Meta-Review Card | Review complete | Boundary Violation detection |
-| Risk Card | Involves shared components / auth logic / globally shared interfaces / high-frequency multi-person edit areas | Must surface; if necessary, risk governance meta Interrupts |
-| Suggestion Card | User clearly hesitates or pauses, but interruption cost is high | Give a low-cost forward plan OR Intentional Silence without interruption |
-| Silence Card | After ≥3 consecutive rounds of high-density pushes | Proactively pause, let the user digest |
-| Skip Card | Attention cost > benefit | Simplify and skip |
-| Interrupt Card | Emergency state | Prioritize |
-| Iteration Card | Acceptance not passed < 3 rounds | Loop again |
+### Execution
+
+**Read `references/dev-governance.md`** for the complete 6-Stage operational specification.
+
+The 6-Stage flow:
+
+| Stage | Name | Key Question |
+|-------|------|-------------|
+| 1 | **Critical** | What is the task? Is it clear? |
+| 2 | **Fetch** | Who can do this? |
+| 3 | **Thinking** | How should we approach it? |
+| 4 | **Execution** | Delegate to agents |
+| 5 | **Review** | Is the result correct? |
+| 6 | **Evolution** | What did we learn? |
+
+**Core principles** (enforced throughout all stages):
+- **Agent Invocation Principle**: Never hardcode agent names — Search who declares "Own X" → Match → Invoke
+- **Skip-Level Gate**: meta-theory does NOT write code directly — always dispatch to Execution Layer
+- **Fetch-first**: Search → Match (score 0-3) → Invoke; 3-step fallback chain (local → global → generic)
 
 ---
 
@@ -863,17 +489,50 @@ Format: scenario description → problem diagnosis → Card Deck configuration (
 
 ---
 
-## Dependency Resources
+## Dependency Skills — Active Invocation Map
 
-| Resource | When to Read | Content |
-|----------|-------------|---------|
-| `references/meta-theory.md` | When Type A/D/E needs theoretical basis | Four main threads, Five Criteria, Four Death Patterns, Organizational Mirror, Rhythm Orchestration overview, Intent Amplification overview |
-| `references/rhythm-orchestration.md` | When Type E needs Rhythm Orchestration details | Attention cost model, card dealing rules, seven heuristics, card data structure, Interrupt signal channels |
-| `references/intent-amplification.md` | When Type C Stage 8 needs evolution amplification details | Intent Core + Delivery Shell model, Shell selection 4 dimensions, 5-dimension evolution amplification operations, CEO report Shell adaptation |
-| `references/ten-step-governance.md` | When Type C/D needs the complete governance path | Detailed explanation of each of the ten steps (executor/input/output/quality gate), complexity routing, Meta-Review protocol |
-| `references/create-agent.md` | When Type B Phase 2-4 needs detailed templates | On-demand station determination table, output file template, verification checklist |
-| `references/dev-governance.md` | When Type C Stage 8 needs detailed detection tables | 5-dimension expanded sub-tables, Meta-Skill invocation mapping |
-| `.claude/agents/meta-*.md` | When starting each station in Type B | Complete methodology for the corresponding station |
+> These 7 skills (from `install-deps.sh`) are **actively invoked** at the corresponding workflow stage. They are NOT passive references.
+
+| Skill | Core Capabilities | Primary Usage |
+|-------|-------------------|---------------|
+| `agent-teams-playbook` | 6-phase orchestration, Subagent/Agent Team selection | Fetch stage team formation |
+| `findskill` | External skill discovery from Skills.sh ecosystem | Fetch stage fallback search |
+| `hookprompt` | Auto prompt optimization Hook (Google prompt engineering + 5-task meta-prompt) | UserPromptSubmit hook for all stages |
+| `superpowers` | brainstorming, verification, systematic-debugging | Critical (clarify), Thinking (explore), Review (verify) |
+| `everything-claude-code` | 60+ specialized agents: code-reviewer, security-reviewer, architect, etc. | Execution + Review stage agents |
+| `planning-with-files` | task_plan.md + findings.md + progress.md | Thinking stage (complex tasks) |
+| `cli-anything` | CLI command generation and execution | Any phase needing shell commands |
+| `gstack` | 29 specialist skills: /review, /qa, /browse, /ship, /cso, /retro, etc. | Execution + Review (PR review, QA, security audit) |
+| `skill-creator` | Skill creation, test framework, assertion-based grading | Type B Phase 3 SOUL.md validation |
+
+### Key Invocation Patterns
+
+**Fetch Fallback Chain** (Type C Stage 2):
+```
+Local scan → findskill search → everything-claude-code agents → general-purpose fallback
+```
+
+**Review Chain** (Type C Stage 5):
+```
+superpowers:verification → code quality agent → security agent → superpowers:verification (confirm fixes)
+```
+
+**SOUL.md Validation** (Type B Phase 3):
+```
+skill-creator:test-framework → eval prompts → assertion grading → redo if FAIL (max 2 rounds)
+```
+
+### Passive Reference Files
+
+| File | When to Read | Purpose |
+|------|-------------|---------|
+| `references/dev-governance.md` | Type C execution | Complete 6-Stage flow, Agent Invocation Principle, Event Card Deck |
+| `references/meta-theory.md` | Type A/D analysis | Five Criteria, Four Death Patterns, Organizational Mirror |
+| `references/rhythm-orchestration.md` | Type E design | Attention cost model, card dealing rules, Interrupt channels |
+| `references/intent-amplification.md` | Type C Evolution | Intent Core + Delivery Shell model |
+| `references/ten-step-governance.md` | Type C/D governance | Complete 10-step governance path |
+| `references/create-agent.md` | Type B Phase 3-4 | Station templates, output file template |
+| `.claude/agents/meta-*.md` | Type B each station | Meta agent methodology |
 
 ---
 

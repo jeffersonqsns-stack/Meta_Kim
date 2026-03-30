@@ -8,6 +8,8 @@
     "sync:runtimes": "node scripts/sync-runtimes.mjs",
     "check:runtimes": "node scripts/sync-runtimes.mjs --check",
     "discover:global": "node scripts/discover-global-capabilities.mjs",
+    "deps:install": "bash install-deps.sh",
+    "deps:update": "bash install-deps.sh --update",
     "test:mcp": "node scripts/mcp/meta-runtime-server.mjs --self-test",
     "prepare:openclaw-local": "node scripts/prepare-openclaw-local.mjs",
     "eval:agents": "node scripts/eval-meta-agents.mjs",

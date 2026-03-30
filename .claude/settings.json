@@ -16,6 +16,29 @@
           {
             "type": "command",
             "command": "node .claude/hooks/block-dangerous-bash.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pre-git-push-confirm.mjs"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-format.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-typecheck.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-console-log-warn.mjs"
           }
         ]
       }
@@ -27,6 +50,17 @@
           {
             "type": "command",
             "command": "node .claude/hooks/subagent-context.mjs"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/stop-console-log-audit.mjs"
           }
         ]
       }

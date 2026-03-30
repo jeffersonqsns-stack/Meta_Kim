@@ -105,7 +105,21 @@ npm run sync:runtimes
 
 这步把 `.claude/agents/` 里的 8 个 agent 同步到 Claude Code / Codex / OpenClaw 三端镜像。**每次改了 agent 定义或 SKILL.md 后都要跑。**
 
-### 第三步：发现全局能力
+### 第三步：安装元技能依赖
+
+```bash
+npm run deps:install
+```
+
+安装 Meta_Kim 依赖的 8 个社区元技能（agent-teams-playbook、findskill、superpowers、everything-claude-code、planning-with-files、cli-anything、gstack、skill-creator）到 `~/.claude/skills/`。**首次安装必须运行。**
+
+**更新**所有依赖到最新版：
+
+```bash
+npm run deps:update
+```
+
+### 第四步：发现全局能力
 
 ```bash
 npm run discover:global
@@ -118,7 +132,7 @@ npm run discover:global
 - **OpenClaw** (`~/.openclaw/`): agents、skills、hooks、commands
 - **Codex** (`~/.codex/`): agents、skills、commands
 
-### 第四步：验证完整性
+### 第五步：验证完整性
 
 ```bash
 npm run validate
@@ -128,7 +142,7 @@ npm run validate
 
 **期望输出：** `Validation passed for 8 agents.`
 
-### 第五步：快速健康度检查
+### 第六步：快速健康度检查
 
 ```bash
 node scripts/agent-health-report.mjs
@@ -136,7 +150,7 @@ node scripts/agent-health-report.mjs
 
 查看 8 个 agent 的状态：版本号、frontmatter 完整性、边界定义、workspace 文件、skill 同步情况，综合健康分。
 
-### 第六步：开始使用（Claude Code）
+### 第七步：开始使用（Claude Code）
 
 用 Claude Code 打开仓库，直接说你想要什么：
 
@@ -361,6 +375,22 @@ Codex 的配置分两层：
 - `.codex/` 是 Codex 真正会直接读取的仓库内内容
 - `codex/` 只是一个配置示例目录，用来说明 `~/.codex/config.toml` 应该怎么接
 
+## Hooks（Claude Code）
+
+Meta_Kim 在 `.claude/settings.json` 中内置了 7 个项目级 hooks：
+
+| Hook | 类型 | 用途 |
+|------|------|------|
+| `block-dangerous-bash.mjs` | PreToolUse/Bash | 阻止危险命令（rm -rf、DROP TABLE、force-push） |
+| `pre-git-push-confirm.mjs` | PreToolUse/Bash | git push 前提醒检查 |
+| `post-format.mjs` | PostToolUse/Edit,Write | 自动 prettier 格式化 JS/TS 文件 |
+| `post-typecheck.mjs` | PostToolUse/Edit,Write | 编辑 .ts/.tsx 后自动 tsc 类型检查 |
+| `post-console-log-warn.mjs` | PostToolUse/Edit,Write | 编辑后检测 console.log 并警告 |
+| `subagent-context.mjs` | SubagentStart | 给子 agent 注入项目上下文 |
+| `stop-console-log-audit.mjs` | Stop | 会话结束前审计所有改动文件的 console.log |
+
+Codex 和 OpenClaw 使用各自的原生机制（developer_instructions 和 SOUL.md）实现等效行为。
+
 ## 这些命令什么时候要跑
 
 ### `npm install`
@@ -381,6 +411,14 @@ Codex 的配置分两层：
 - **Codex** (`~/.codex/`): agents、skills、commands
 
 生成 `.claude/capability-index/global-capabilities.json`，供 meta-theory skill 的 Fetch 阶段使用。这样元架构就能看到并整合你的全局能力。
+
+### `npm run deps:install`
+
+安装 Meta_Kim 依赖的 8 个社区元技能。底层运行 `install-deps.sh`。
+
+### `npm run deps:update`
+
+更新所有已安装的元技能依赖到最新版。等同于 `bash install-deps.sh --update`。
 
 ### `npm run validate`
 

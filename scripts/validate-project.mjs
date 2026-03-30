@@ -97,6 +97,33 @@ function assertNoForbiddenMarkers(raw, filePath, markers = forbiddenRuntimeMarke
   }
 }
 
+/**
+ * Skill files may contain `Skill(skill=` in the Dependency Resources section —
+ * those are documented invocation examples, not forbidden runtime tool calls.
+ * This function strips the Dependency Resources section before checking.
+ */
+function assertNoForbiddenMarkersInSkill(raw, filePath, markers = forbiddenRuntimeMarkers) {
+  // Extract everything before ## Dependency Resources (case-insensitive)
+  const depResMatch = raw.match(/\n## Dependency Resources\b/i);
+  const contentBeforeDepRes = depResMatch
+    ? raw.substring(0, depResMatch.index)
+    : raw;
+
+  // Also extract Dependency Skills section (new name in v1.4.0)
+  const depSkillsMatch = raw.match(/\n## Dependency Skills\b/i);
+  const contentBeforeDepSkills = depSkillsMatch
+    ? raw.substring(0, depSkillsMatch.index)
+    : contentBeforeDepRes;
+
+  for (const marker of markers) {
+    // Check body before the Dependency Resources/Skills section
+    assert(
+      !contentBeforeDepSkills.includes(marker),
+      `${filePath} still contains forbidden marker: ${marker} (outside Dependency Resources section)`
+    );
+  }
+}
+
 function parseFrontmatter(raw, filePath) {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) {
@@ -349,7 +376,7 @@ async function validateOpenClawArtifacts(agentIds) {
       `Missing OpenClaw workspace skill: ${path.relative(repoRoot, workspaceSkill)}`
     );
     const workspaceSkillRaw = await fs.readFile(workspaceSkill, "utf8");
-    assertNoForbiddenMarkers(workspaceSkillRaw, workspaceSkill);
+    assertNoForbiddenMarkersInSkill(workspaceSkillRaw, workspaceSkill);
     for (const referenceFile of referenceFiles) {
       const workspaceReference = path.join(
         openclawWorkspacesDir,

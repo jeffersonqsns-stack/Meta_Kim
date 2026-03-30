@@ -43,7 +43,7 @@ So in practice:
 - `.claude/skills/meta-theory/SKILL.md`
   canonical skill source
 - `.claude/settings.json`
-  Claude Code permissions and hooks
+  Claude Code permissions and hooks (7 project-level hooks: dangerous-bash blocker, git-push confirm, auto-format, typecheck, console.log warn, subagent context injection, session-end audit)
 - `.mcp.json`
   project-level MCP entry for Claude Code
 
