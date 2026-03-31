@@ -70,6 +70,7 @@ So in practice:
   - `npm run discover:global`
 - If you need runtime-level acceptance instead of file-level validation, also run:
   - `npm run eval:agents`
+  - Optional (especially Windows PATH / shims): set `META_KIM_CLAUDE_BIN`, `META_KIM_CODEX_BIN`, or `META_KIM_OPENCLAW_BIN` to an absolute CLI path — see README `eval:agents` section.
 - For full validation + acceptance, run:
   - `npm run verify:all`
 - For a quick health check of all 8 meta agents:

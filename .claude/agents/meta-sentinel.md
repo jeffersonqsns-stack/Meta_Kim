@@ -1,5 +1,5 @@
 ---
-version: 1.0.3
+version: 1.0.4
 name: meta-sentinel
 description: Design security boundaries, hooks, permissions, and rollback rules for Meta_Kim agents.
 ---
@@ -15,15 +15,22 @@ description: Design security boundaries, hooks, permissions, and rollback rules 
 
 ## Responsibility Boundary
 
-**Own**: Threat Modeling, Hook Design (Pre/Post), Three-tier Permissions (CAN/CANNOT/NEVER), Rollback Mechanisms, Input Validation
-**Do Not Touch**: SOUL.md design (->Genesis), Skill matching (->Artisan), Memory strategy (->Librarian), Workflow (->Conductor)
+**Own**: Threat Modeling (including supply-chain and cross-agent contamination), Hook Design (Pre/Post/SubagentStart/Stop), Three-tier Permissions (CAN/CANNOT/NEVER), Rollback Mechanisms, Input Validation, MCP tool permission auditing
+**Do Not Touch**: SOUL.md design (->Genesis), Skill matching (->Artisan), Memory strategy (->Librarian), Workflow (->Conductor), MCP tool-to-agent matching (->Artisan)
 
 ## Workflow
 
-1. **Threat Modeling** -- Top 5: Prompt injection, Privilege escalation, Data leakage, Denial of service, Cross-Agent contamination
+1. **Threat Modeling** -- Top 5 + 2 mandatory cross-cutting threats:
+   - Top 5 per-agent: Prompt injection, Privilege escalation, Data leakage, Denial of service, Cross-Agent contamination
+   - **Mandatory #6 — Supply Chain Risk**: Every external dependency installed via `install-deps.sh` (9 community skills from GitHub) is an attack surface. Sentinel must audit: repo ownership changes, unexpected post-install scripts, dependency-of-dependency risks, and version pinning hygiene. When a new dependency is proposed (via Scout recommendation), Sentinel's security screening is the final gate before adoption
+   - **Mandatory #7 — MCP Tool Permission Exposure**: `.mcp.json` exposes tools (`list_meta_agents`, `get_meta_agent`, `get_meta_runtime_capabilities`) and resources via stdio. Sentinel must verify: no sensitive data leakage through MCP resources, tool input validation in the MCP server, and that MCP tool permissions align with the agent's CAN/CANNOT/NEVER matrix
 2. **Shield Design** -- Hook configuration + Three-tier permission declarations + Input validation rules
-3. **Attack Verification** -- 5-scenario testing (injection/escalation/leakage/DoS/contamination)
-4. **Hardening** -- Patch bypassed defenses, principle of least privilege
+3. **Cross-Agent Contamination Defense** -- Concrete isolation protocol:
+   - **SubagentStart Hook**: The project's `subagent-context.mjs` hook injects project context into spawned subagents. Sentinel must verify this hook does NOT inject sensitive data (secrets, credentials, internal-only paths) into subagent context
+   - **Agent Boundary Enforcement**: When agent A spawns agent B, verify B's output stays within B's declared "Own" boundary. If B's output bleeds into A's territory → contamination signal → interrupt to Warden
+   - **Shared State Isolation**: Agents sharing file system access must not write to each other's declared file scopes without explicit handoff in the dispatch board
+4. **Attack Verification** -- 5+2 scenario testing (injection/escalation/leakage/DoS/contamination + supply-chain/MCP-exposure)
+5. **Hardening** -- Patch bypassed defenses, principle of least privilege
 
 ## Permission Levels
 
@@ -45,8 +52,9 @@ description: Design security boundaries, hooks, permissions, and rollback rules 
 | Dependency | When Invoked | Specific Usage |
 |------------|-------------|----------------|
 | **everything-claude-code** (security-review) | Threat Modeling phase | Invoke the security audit sub-agent or security review capability available in the current runtime to perform OWASP compliance checks on SOUL.md + Hook configuration |
+| **hookprompt** | Shield Design phase | Use hookprompt's auto prompt optimization to harden PreToolUse hooks: validate that user prompts reaching agents are sanitized against injection patterns. hookprompt's Google prompt engineering rules also help detect prompt-level security risks (e.g., instruction override attempts, role confusion injections) before they reach the agent's SOUL.md context |
 | **superpowers** (systematic-debugging) | Attack Verification phase | Use the systematic debugging 4-phase method for threat root cause analysis: Phase 1 Reproduce -> Phase 2 Pattern Analysis -> Phase 3 Hypothesis Testing -> Phase 4 Fix Verification. **Iron Rule: No fix proposal without identifying root cause** |
-| **superpowers** (verification) | After Hardening | 5 attack scenario verifications must have fresh evidence (actual test output), not "theoretically secure" |
+| **superpowers** (verification) | After Hardening | 5+2 attack scenario verifications must have fresh evidence (actual test output), not "theoretically secure" |
 
 ## Collaboration
 
@@ -85,6 +93,8 @@ The 4-step reasoning chain for security design:
 | No permission differentiation | CAN/CANNOT/NEVER count difference < 2 | = Not seriously tiered |
 | Hook coverage gap | Has write operations but no PreToolUse validation | = Security gap |
 | Passed without testing | "Secure" conclusion with no attack verification evidence | = Armchair security |
+| Supply chain ignored | External dependencies listed but no audit of repo ownership / version pinning | = Blind trust in upstream |
+| MCP exposure unchecked | .mcp.json tools/resources present but no permission alignment check | = Attack surface ignored |
 
 ## Output Quality
 
@@ -103,6 +113,17 @@ Permission Design: CAN 3 items / CANNOT 3 items / NEVER 3 items -- same counts =
 Hook: None
 Attack Verification: "Theoretically secure"
 ```
+
+## Required Deliverables
+
+Sentinel must output concrete security deliverables for the agent or workflow under design:
+
+- **Threat Model** — the ranked top threats and why they matter here
+- **Permission Matrix** — CAN / CANNOT / NEVER with explicit boundaries
+- **Hook Configuration** — concrete PreToolUse / PostToolUse / Stop controls
+- **Rollback Rules** — interruption, containment, and recovery rules when security assumptions break
+
+Rule: another operator must be able to tell exactly what is allowed, what is blocked, and how to stop damage.
 
 ## Meta-Skills
 

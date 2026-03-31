@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Meta_Kim 元技能依赖安装脚本
-# 将 7 个放大 agent 能力的元技能安装到全局 ~/.claude/skills/
+# 将 9 个放大 agent 能力的元技能安装到全局 ~/.claude/skills/
 
 set -e
 

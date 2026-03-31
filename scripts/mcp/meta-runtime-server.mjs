@@ -85,12 +85,34 @@ async function loadAgents() {
   return sortAgents(agents);
 }
 
+async function readUtf8IfExists(filePath, fallbackText) {
+  try {
+    return await fs.readFile(filePath, "utf8");
+  } catch {
+    return fallbackText;
+  }
+}
+
+const FALLBACK_META_THEORY = `# Meta theory (checkout without private manuscript)
+
+The long-form research transcript \`docs/meta.md\` is not present in this working tree (common in public or minimal clones). Use **CLAUDE.md**, **AGENTS.md**, and \`.claude/skills/meta-theory/SKILL.md\` as the canonical Meta_Kim context.
+`;
+
+const FALLBACK_RUNTIME_MATRIX = `# Runtime capability matrix (stub)
+
+\`docs/runtime-capability-matrix.md\` is not present in this working tree. See **AGENTS.md** for Codex/OpenClaw mirrors and runtime sync commands (\`npm run sync:runtimes\`, \`npm run validate\`).
+`;
+
 async function loadRuntimeData() {
-  const [agents, metaTheory, runtimeMatrix, sharedSkill] = await Promise.all([
-    loadAgents(),
-    fs.readFile(path.join(repoRoot, "docs", "meta.md"), "utf8"),
-    fs.readFile(path.join(repoRoot, "docs", "runtime-capability-matrix.md"), "utf8"),
-    fs.readFile(path.join(repoRoot, "shared-skills", "meta-theory.md"), "utf8")
+  const agents = await loadAgents();
+  const metaTheoryPath = path.join(repoRoot, "docs", "meta.md");
+  const matrixPath = path.join(repoRoot, "docs", "runtime-capability-matrix.md");
+  const sharedSkillPath = path.join(repoRoot, "shared-skills", "meta-theory.md");
+
+  const [metaTheory, runtimeMatrix, sharedSkill] = await Promise.all([
+    readUtf8IfExists(metaTheoryPath, FALLBACK_META_THEORY),
+    readUtf8IfExists(matrixPath, FALLBACK_RUNTIME_MATRIX),
+    fs.readFile(sharedSkillPath, "utf8")
   ]);
 
   return { agents, metaTheory, runtimeMatrix, sharedSkill };

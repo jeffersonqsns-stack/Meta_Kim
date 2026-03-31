@@ -3,6 +3,18 @@
   "owner": "Meta_Kim",
   "businessWorkflow": {
     "id": "business",
+    "distinctFromCanonicalSpine": true,
+    "canonicalExecutionSpineRef": "meta-theory Type C: Critical → Fetch → Thinking → Execution → Review → Meta-Review → Verification → Evolution (see .claude/skills/meta-theory/references/dev-governance.md). Business phase ids here are department-run vocabulary only; they do not rename or substitute spine stage names.",
+    "canonicalExecutionSpineStages": [
+      "critical",
+      "fetch",
+      "thinking",
+      "execution",
+      "review",
+      "meta_review",
+      "verification",
+      "evolution"
+    ],
     "phases": [
       "direction",
       "planning",
@@ -97,7 +109,7 @@
     },
     "verify": {
       "owners": [
-        "manager",
+        "meta-warden",
         "meta-prism"
       ]
     },

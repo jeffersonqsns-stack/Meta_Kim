@@ -13,6 +13,7 @@
     "test:mcp": "node scripts/mcp/meta-runtime-server.mjs --self-test",
     "prepare:openclaw-local": "node scripts/prepare-openclaw-local.mjs",
     "eval:agents": "node scripts/eval-meta-agents.mjs",
+    "probe:clis": "node scripts/eval-meta-agents.mjs --probe-clis-only",
     "validate": "node scripts/validate-project.mjs",
     "check": "npm run check:runtimes && npm run validate",
     "verify:all": "npm run check && npm run eval:agents"

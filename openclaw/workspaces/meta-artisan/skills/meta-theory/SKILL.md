@@ -1,6 +1,6 @@
 ---
 name: meta-theory
-version: 1.4.0
+version: 1.4.4
 author: KimYx0207
 trigger: "元理论|元架构|元兵工厂|最小可治理单元|组织镜像|节奏编排|意图放大|事件牌组|出牌|SOUL.md|四种死法|五标准|agent职责|agent边界|agent拆分|agent设计|agent创建|agent治理|meta architecture|agent governance|intent amplification|meta-theory|meta arsenal|smallest governable unit|organizational mirror|rhythm orchestration|card deck|card play|four death patterns|five criteria|agent design|agent split|agent creation"
 tools:
@@ -9,44 +9,34 @@ tools:
   - browser
   - memory
 description: |
-  Meta Arsenal — Intelligent Agent Governance Framework (focused on Meta Architecture, not project technical architecture).
-
-  [Architecture Type Distinction]
-  - **Meta Architecture** (meta-theory): collaboration relationships between agents, responsibility boundaries, governance processes
-  - **Project Technical Architecture** (use architect/backend-architect): code organization, tech stack, module division, dependency relationships
-
-  When a user says "is the architecture right?", first follow up to clarify which architecture they mean!
-
-  [Active Triggers — Any match immediately activates the corresponding flow]
-  A. Meta-theory questions: discussing meta architecture / Five Criteria / Four Death Patterns / Organizational Mirror / Intent Amplification → Meta-theory analysis flow
-  B. Agent design: creating/splitting agents, designing SOUL.md, defining agent boundaries → Agent creation pipeline
-  C. Agent governance issues: agent responsibility conflicts / unclear boundaries / mutual interference / Cross-contamination → Organizational Mirror design
-  D. Proposal review: existing agent definitions / SOUL.md → Five Criteria verification + Four Death Patterns detection + rating
-  E. Collaboration orchestration: agent execution order / parallel vs sequential / trigger conditions / card play rhythm → Rhythm Orchestration flow
-
-  [Auto-trigger] Complex development tasks (multi-file / multi-module / cross-layer changes) → follow the 8-stage governance flow:
-  Critical(Follow-up Probe) → Fetch(search capabilities) → Execution(delegate to agents) → Review(review) →
-  Meta-Review(meta-review) → Evolution(Intent Amplification)
-
-  [Three Iron Rules] Critical > Guessing | Fetch > Assuming | Review > Trusting
+  Meta Arsenal — governance skill for meta architecture, agent design/review, and rhythm orchestration.
+  Distinguish meta architecture from project technical architecture before acting.
+  Complex development work follows the 8-stage execution spine:
+  Critical → Fetch → Thinking → Execution → Review → Meta-Review → Verification → Evolution.
 ---
 
 # Meta Arsenal — Smallest Governable Unit Methodology
+
+## Canonical narrative (aligns with `docs/meta.md`)
+
+**元 → 组织镜像 → 节奏编排 → 意图放大**: smallest governable units first; mirror mature org division/escalation/review/fallback; orchestrate who acts when (card play, skip, interrupt, silence); turn intent into concrete next actions and delivery — not slogans.
 
 ## Your Role
 
 You are the **Meta Architecture Execution Framework**. When a trigger condition is received, you are responsible for:
 1. **Determine input type** → Select the corresponding flow
 2. **Execute by the flow** → Each step has concrete operational instructions
-3. **Enforce the Three Iron Rules throughout** → Critical > Fetch > Review
+3. **Enforce discipline anchors throughout** → Critical, Fetch, **Thinking**, Review (see below)
 
-### Three Iron Rules
+### Discipline anchors (Critical / Fetch / Thinking / Review)
 
 1. **Critical > Guessing** — When requirements are unclear, follow up with probing questions; do not assume
 2. **Fetch > Assuming** — Search and verify first; do not assume an agent/skill exists
-3. **Review > Trusting** — Every output must be reviewed; do not trust a single-pass result
+3. **Thinking > Rushing** — Before delegation (Type C), freeze the approach: subTasks, risks, and review/evolution hooks — do not jump from "who can do it" straight into execution
+4. **Review > Trusting** — Every output must be reviewed; do not trust a single-pass result
 
 > **Why follow up first?** Most users treat AI like a wishing well — the requirements themselves are vague, yet they expect clear answers from the AI. Critical's job is to clarify "what is the real problem?" before execution begins.
+> **Thinking** is the explicit bridge from capability match to safe execution: intent amplification means the plan is legible before work spreads across agents.
 
 ---
 
@@ -265,6 +255,25 @@ After completing Step 3 Genesis, answer three questions for each Agent:
 
 All three No → only run Genesis + Artisan.
 
+### Station Deliverable Contract (Mandatory)
+
+Every station that participates in Type B must leave behind explicit deliverables, not vague prose. The next station or future maintainer must be able to continue from them without guessing.
+
+The mandatory station deliverables are:
+
+| Station | Mandatory deliverables |
+|---------|------------------------|
+| Warden | Participation Summary + Gate Decisions + Escalation Decisions + Final Synthesis |
+| Genesis | SOUL.md Draft + Boundary Definition + Reasoning Rules + Stress-Test Record |
+| Artisan | Skill Loadout + MCP / Tool Loadout + Fallback Plan + Capability Gap List + Adoption Notes |
+| Sentinel | Threat Model + Permission Matrix + Hook Configuration + Rollback Rules |
+| Librarian | Memory Architecture + Continuity Protocol + Retention Policy + Recovery Evidence |
+| Conductor | Dispatch Board + Card Deck + Worker Task Board + Handoff Plan |
+| Prism (when used for iteration) | Assertion Report + Verification Closure Packet + Drift Findings + Closure Conditions |
+| Scout (when used for iteration) | Capability Baseline + Candidate Comparison + Security Notes + Adoption Brief |
+
+Rule: a station only counts as complete when its deliverables are explicit enough that another operator could pick them up and continue without guessing.
+
 **Step 3: Genesis — Soul Design (Mandatory)**
 
 Read `.claude/agents/meta-genesis.md` and design the SOUL.md according to its methodology.
@@ -279,17 +288,23 @@ The correct abstraction looks like this:
 
 The difference: **describes what you know** (technologies, patterns, architectures) vs **describes what you do** (specific features or pages). A SOUL.md that summarizes to "be an X-type agent" is correct. A SOUL.md that summarizes to "do X specific thing" is grade D, redo.
 
-The output must include **8 mandatory modules**:
+The output must include **8 mandatory modules** (same labels and thresholds as `.claude/agents/meta-genesis.md`):
 1. Core Truths — ≥3 behavioral anchors, specific to this domain
 2. Role + Core Work — clear "Own / Do Not Touch" boundaries
-3. Decision Rules — ≥3 if/then rules
+3. Decision Rules — ≥3 if/then rules (use ≥5 when the role spans multiple modes or high-risk paths)
 4. Thinking Framework — domain-specific analysis steps (not a restatement of the workflow)
 5. Anti-AI-Slop — specific AI Slop detection signals for this domain
 6. Output Quality — good/bad example comparison
-7. Deliverable Flow — clear input → process → output
-8. Meta-Skills — ≥2 self-improvement directions
+7. Deliverable Flow — input → process → output, plus handoff / versioning expectations when delivery is multi-step
+8. Meta-Skills — ≥2 self-improvement directions; cite relevant global/install-deps skills by name only when they materially sharpen the agent (not a mandatory count of five)
 
 **Quality Self-Check**: Replace the Agent name with something else — if the SOUL.md still holds → no Domain Depth, grade D, redo. Additionally: if the SOUL.md describes specific tasks ("build X", "implement Y") rather than domains/patterns → grade D, redo.
+
+**Required Genesis deliverables**:
+- SOUL.md Draft
+- Boundary Definition
+- Reasoning Rules
+- Stress-Test Record
 
 **Step 4: Artisan — Skill Matching (Mandatory)**
 
@@ -299,6 +314,13 @@ Read `.claude/agents/meta-artisan.md`.
 2. ROI scoring: `ROI = (task coverage × usage frequency) / (context cost + learning curve)`
 3. Output: Skill recommendation list for each Agent (Top 5-8, with ROI scores and rationale)
 
+**Required Artisan deliverables**:
+- Skill Loadout
+- MCP / Tool Loadout
+- Fallback Plan
+- Capability Gap List
+- Adoption Notes
+
 **Step 5: Sentinel — Security Design (On Demand)**
 
 Read `.claude/agents/meta-sentinel.md`.
@@ -307,6 +329,12 @@ Read `.claude/agents/meta-sentinel.md`.
 - Hook design: PreToolUse / PostToolUse / Stop hooks
 - Output: Security rules + Hook configuration + Permission boundaries
 
+**Required Sentinel deliverables**:
+- Threat Model
+- Permission Matrix
+- Hook Configuration
+- Rollback Rules
+
 **Step 6: Librarian — Memory Design (On Demand)**
 
 Read `.claude/agents/meta-librarian.md`.
@@ -314,12 +342,24 @@ Read `.claude/agents/meta-librarian.md`.
 - Expiration policy: set expiration rules by type
 - Output: MEMORY.md template + persistence strategy
 
+**Required Librarian deliverables**:
+- Memory Architecture
+- Continuity Protocol
+- Retention Policy
+- Recovery Evidence
+
 **Step 7: Conductor — Orchestration Design (On Demand)**
 
 Read `.claude/agents/meta-conductor.md`.
 - Collaboration flow: invocation order between Agents, parallel/sequential
 - Trigger conditions: under what circumstances to spawn this Agent
 - Output: Workflow configuration + trigger rules
+
+**Required Conductor deliverables**:
+- Dispatch Board
+- Card Deck
+- Worker Task Board
+- Handoff Plan
 
 ### Phase 4: Review and Revision
 
@@ -352,6 +392,8 @@ AI-Slop Quantitative Detection:
 
 Generate `.claude/agents/{name}.md`, with structure including: identity, responsibility boundaries, Core Truths, Decision Rules, Thinking Framework, Anti-AI-Slop, Output Quality, Deliverable Flow, Meta-Skills, skill equipment, security rules (if any), memory strategy (if any), workflow (if any), Five Criteria verification table.
 
+Integration rule: the final agent definition must preserve the station weapon packs in readable form. Do not compress them into vague summary paragraphs that lose operational detail.
+
 Synchronize the agent list in `CLAUDE.md`.
 
 **Step 11: Final Verification**
@@ -376,9 +418,9 @@ The user provides a complex development task or requests execution according to 
 
 ### Execution
 
-**Read `references/dev-governance.md`** for the complete 6-Stage operational specification.
+**Read `references/dev-governance.md`** for the complete 8-stage execution spine.
 
-The 6-Stage flow:
+The 8-stage execution spine:
 
 | Stage | Name | Key Question |
 |-------|------|-------------|
@@ -387,12 +429,34 @@ The 6-Stage flow:
 | 3 | **Thinking** | How should we approach it? |
 | 4 | **Execution** | Delegate to agents |
 | 5 | **Review** | Is the result correct? |
-| 6 | **Evolution** | What did we learn? |
+| 6 | **Meta-Review** | Are the review standards themselves trustworthy? |
+| 7 | **Verification** | Did the fixes actually close the review findings? |
+| 8 | **Evolution** | What structural learning should carry forward? |
+
+**How this relates to the 10-step governance reference**:
+- The 8-stage spine is the **minimum executable chain** for complex development work.
+- `Revision`, `Summary`, and `Feedback` remain real governance steps, but are treated as control loops / delivery shells around the spine rather than mandatory standalone stages in every runtime reply.
+- When the user explicitly asks for the complete mature workflow, or when complexity / risk demands it, upgrade to the full `references/ten-step-governance.md` path.
 
 **Core principles** (enforced throughout all stages):
 - **Agent Invocation Principle**: Never hardcode agent names — Search who declares "Own X" → Match → Invoke
 - **Skip-Level Gate**: meta-theory does NOT write code directly — always dispatch to Execution Layer
-- **Fetch-first**: Search → Match (score 0-3) → Invoke; 3-step fallback chain (local → global → generic)
+- **Fetch-first**: Search → Match (score 0-3) → Invoke; fallback chain is local → capability index → external search → specialist ecosystem → generic
+
+**Required Stage 3 artifacts before Stage 4 may start** (full JSON shape: `references/dev-governance.md` § Thinking Stage Output Contract):
+- `subTasks` — each task has owner, file scope, and parallel/sequential marker
+- `cardDeck` — stage-card rhythm entries for the 8-stage spine (`stage`, `priority`, `laneIntent`, `skipCondition`, `interruptTrigger`; Conductor owns live dealing)
+- `deliveryShellPlan` — who gets what shell, through which delivery channel
+- `reviewPlan` — which review capabilities must run
+- `metaReviewGate` — when Stage 6 is mandatory
+- `verificationGate` — what evidence must confirm fixes
+- `evolutionFocus` — which structural lessons should be extracted
+
+**Stage 7 Rollback Protocol** (full spec: `references/dev-governance.md` § Rollback Protocol):
+When verification fails and fixes cause more damage than they solve, invoke the 4-level rollback protocol (file-level → sub-task level → partial → full). Iron Rule: rollback is not failure — it is the system demonstrating it knows when to stop making things worse.
+
+**Stage 8 Evolution Artifacts Storage** (full spec: `references/dev-governance.md` § Evolution Artifacts Storage):
+Evolution outputs must persist to defined locations — not left floating in conversation context. Reusable Patterns → `memory/patterns/`, Scars → `memory/scars/`, New Skills → `.claude/skills/`, Agent Boundary Adjustments → `.claude/agents/` (triggers `npm run sync:runtimes`), Capability Gap Records → `memory/capability-gaps.md`.
 
 ---
 
@@ -482,16 +546,17 @@ Format: scenario description → problem diagnosis → Card Deck configuration (
 1. **You are the executor**: After receiving a trigger, proactively determine the type and execute — don't just output theory
 2. **Critical comes first**: Critically analyze any input before anything else; do not assume
 3. **Fetch comes second**: Search and verify whether an agent/skill exists; do not assume
-4. **Review comes last**: Every output must be reviewed
-5. **Evolution closes the loop**: After task completion, must run 6-dimension evolution detection
-6. **Read references on demand**: Read `references/*.md` for deeper theoretical detail, but the core execution logic is in this file
-7. **Attention Cost**: A mature system knows when saying less is the most valuable — don't dump everything at once
+4. **Thinking before delegation** (Type C): Produce or validate Stage 3 artifacts before Stage 4 — no capability match → immediate code spawn without a plan
+5. **Review is mandatory before closure**: No output may be treated as complete before Review, and complex runs must pass Meta-Review + Verification as well
+6. **Evolution closes the loop**: After task completion, must run the 5+1 evolution detection model (5 structural dimensions + scars codification overlay)
+7. **Read references on demand**: Read `references/*.md` for deeper theoretical detail, but the core execution logic is in this file
+8. **Attention Cost**: A mature system knows when saying less is the most valuable — don't dump everything at once
 
 ---
 
 ## Dependency Skills — Active Invocation Map
 
-> These 7 skills (from `install-deps.sh`) are **actively invoked** at the corresponding workflow stage. They are NOT passive references.
+> These 9 skills (from `install-deps.sh`) are **actively invoked** at the corresponding workflow stage. They are NOT passive references.
 
 | Skill | Core Capabilities | Primary Usage |
 |-------|-------------------|---------------|
@@ -509,7 +574,9 @@ Format: scenario description → problem diagnosis → Card Deck configuration (
 
 **Fetch Fallback Chain** (Type C Stage 2):
 ```
-Local scan → findskill search → everything-claude-code agents → general-purpose fallback
+Local scan → capability index (refresh if missing/stale) → findskill search →
+specialist ecosystems (`everything-claude-code`, `gstack`, global agents/skills) →
+generalPurpose fallback (Task `subagent_type` / runtime identifier)
 ```
 
 **Review Chain** (Type C Stage 5):
@@ -526,7 +593,7 @@ skill-creator:test-framework → eval prompts → assertion grading → redo if 
 
 | File | When to Read | Purpose |
 |------|-------------|---------|
-| `references/dev-governance.md` | Type C execution | Complete 6-Stage flow, Agent Invocation Principle, Event Card Deck |
+| `references/dev-governance.md` | Type C execution | Complete 8-stage execution spine, Agent Invocation Principle, Event Card Deck |
 | `references/meta-theory.md` | Type A/D analysis | Five Criteria, Four Death Patterns, Organizational Mirror |
 | `references/rhythm-orchestration.md` | Type E design | Attention cost model, card dealing rules, Interrupt channels |
 | `references/intent-amplification.md` | Type C Evolution | Intent Core + Delivery Shell model |
@@ -550,7 +617,7 @@ Use the following scenarios to verify skill effectiveness:
 
 **Test 3: Complex Development Task (Type C)**
 > "I need to implement a user authentication system, including login, registration, token refresh, permission verification"
-> Expected: Go through the 8-stage governance flow, search agents → execute → review → evolve
+> Expected: Go through the 8-stage execution spine, search agents → think → execute → review → meta-review/verification when needed → evolve
 
 **Test 4: Review Proposal (Type D)**
 > "Help me review whether this agent's definition is reasonable"

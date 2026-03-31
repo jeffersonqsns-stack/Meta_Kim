@@ -26,6 +26,17 @@ const REQUIRED_WORKSPACE_FILES = [
   "TOOLS.md",
 ];
 
+const ROLE_CONTRACT_MARKERS = {
+  "meta-warden": ["## Required Deliverables", "Participation Summary", "Gate Decisions", "Escalation Decisions", "Final Synthesis"],
+  "meta-conductor": ["## Required Deliverables", "Dispatch Board", "Card Deck", "Worker Task Board", "Handoff Plan"],
+  "meta-genesis": ["## Required Deliverables", "SOUL.md Draft", "Boundary Definition", "Reasoning Rules", "Stress-Test Record"],
+  "meta-artisan": ["## Required Deliverables", "Skill Loadout", "MCP / Tool Loadout", "Fallback Plan", "Capability Gap List", "Adoption Notes"],
+  "meta-sentinel": ["## Required Deliverables", "Threat Model", "Permission Matrix", "Hook Configuration", "Rollback Rules"],
+  "meta-librarian": ["## Required Deliverables", "Memory Architecture", "Continuity Protocol", "Retention Policy", "Recovery Evidence"],
+  "meta-prism": ["## Required Deliverables", "Assertion Report", "Verification Closure Packet", "Drift Findings", "Closure Conditions"],
+  "meta-scout": ["## Required Deliverables", "Capability Baseline", "Candidate Comparison", "Security Notes", "Adoption Brief"],
+};
+
 // --- Data Collection Helpers ---
 
 async function readJsonFrontmatter(filePath) {
@@ -145,6 +156,10 @@ async function collectAgentHealth(agentId) {
   const hasRefuseBoundary = canonicalRaw?.includes("不碰") || canonicalRaw?.includes("Refuse") || canonicalRaw?.includes("refuse") || canonicalRaw?.includes("Touch");
   const hasFiveStandard = canonicalRaw?.includes("元理论验证") || canonicalRaw?.includes("五标准") || canonicalRaw?.includes("Meta-Theory Verification") || canonicalRaw?.includes("Meta-Theory Validation") || canonicalRaw?.includes("Five Criteria");
   const hasSoul = soulRaw && soulRaw.length > 100;
+  const requiredRoleMarkers = ROLE_CONTRACT_MARKERS[agentId] ?? [];
+  const roleContractCoverage = requiredRoleMarkers.length
+    ? requiredRoleMarkers.filter((marker) => canonicalRaw?.includes(marker)).length / requiredRoleMarkers.length
+    : 1;
 
   // Health score components (0-1 scale)
   const scoreComponents = {
@@ -154,6 +169,7 @@ async function collectAgentHealth(agentId) {
     skillSynced: skillSynced ? 1 : 0,
     fiveStandard: hasFiveStandard ? 1 : 0,
     soulExists: hasSoul ? 1 : 0,
+    roleContract: roleContractCoverage,
   };
   const healthScore = Object.values(scoreComponents).reduce((a, b) => a + b, 0) / Object.keys(scoreComponents).length;
 
@@ -170,6 +186,7 @@ async function collectAgentHealth(agentId) {
     hasOwnBoundary,
     hasRefuseBoundary,
     hasFiveStandard,
+    roleContractCoverage: Math.round(roleContractCoverage * 100),
     // Workspace
     workspaceFilesComplete,
     workspaceFilesTotal: REQUIRED_WORKSPACE_FILES.length,
@@ -247,6 +264,8 @@ function renderMarkdown(agents, summary) {
       issues.push(`⚠️ ${a.agentId}: boundary definition missing (owns/refuses)`);
     if (!a.hasFiveStandard)
       issues.push(`⚠️ ${a.agentId}: missing meta theory validation table`);
+    if (a.scoreComponents.roleContract < 1)
+      issues.push(`⚠️ ${a.agentId}: station deliverables markers incomplete (${a.roleContractCoverage}%)`);
   }
 
   lines.push(`## Issues Found`);
@@ -275,6 +294,7 @@ function renderMarkdown(agents, summary) {
     lines.push(`- **Boundaries**: 只管=${a.hasOwnBoundary} 不碰=${a.hasRefuseBoundary}`);
     lines.push(`- **Five-Standard**: ${a.hasFiveStandard ? "✅" : "❌"}`);
     lines.push(`- **Skill Synced**: ${a.skillSynced ? "✅" : "❌"}`);
+    lines.push(`- **Role Contract Coverage**: ${a.roleContractCoverage}%`);
     lines.push(``);
   }
 

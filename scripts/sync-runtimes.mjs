@@ -576,7 +576,10 @@ async function main() {
         path.join(workspaceDir, "HEARTBEAT.md"),
         buildHeartbeat(agent)
       ),
-      writeGeneratedFile(path.join(workspaceDir, "TOOLS.md"), buildTools(agent, agents)),
+      writeGeneratedFile(
+        path.join(workspaceDir, "TOOLS.md"),
+        buildTools(agent, agents)
+      ),
       writeGeneratedFile(
         path.join(workspaceDir, "skills", "meta-theory", "SKILL.md"),
         portableSkill

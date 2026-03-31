@@ -17,6 +17,27 @@ const claudeSkillReferencesDir = path.join(
 );
 const openclawWorkspacesDir = path.join(repoRoot, "openclaw", "workspaces");
 const execFileAsync = promisify(execFile);
+
+/** Must match contracts/workflow-contract.json runDiscipline.publicDisplayRequires (set equality). */
+const EXPECTED_PUBLIC_DISPLAY_REQUIRES = [
+  "verifyPassed",
+  "summaryClosed",
+  "singleDeliverableMaintained",
+  "deliverableChainClosed",
+  "consolidatedDeliverablePresent"
+];
+
+/** Documented in AGENTS.md / CLAUDE.md — seven project hook commands. */
+const EXPECTED_CLAUDE_HOOK_COMMANDS = [
+  "node .claude/hooks/block-dangerous-bash.mjs",
+  "node .claude/hooks/pre-git-push-confirm.mjs",
+  "node .claude/hooks/post-format.mjs",
+  "node .claude/hooks/post-typecheck.mjs",
+  "node .claude/hooks/post-console-log-warn.mjs",
+  "node .claude/hooks/subagent-context.mjs",
+  "node .claude/hooks/stop-console-log-audit.mjs"
+];
+
 const forbiddenRuntimeMarkers = [
   "AskUserQuestion",
   'Agent(subagent_type="',
@@ -26,6 +47,66 @@ const forbiddenRuntimeMarkers = [
   "keyword-optimizer.mjs",
   "run_loop.py"
 ];
+
+const EXPECTED_AGENT_WEAPON_MARKERS = {
+  "meta-warden": [
+    "## Required Deliverables",
+    "Participation Summary",
+    "Gate Decisions",
+    "Escalation Decisions",
+    "Final Synthesis"
+  ],
+  "meta-conductor": [
+    "## Required Deliverables",
+    "Dispatch Board",
+    "Card Deck",
+    "Worker Task Board",
+    "Handoff Plan"
+  ],
+  "meta-genesis": [
+    "## Required Deliverables",
+    "SOUL.md Draft",
+    "Boundary Definition",
+    "Reasoning Rules",
+    "Stress-Test Record"
+  ],
+  "meta-artisan": [
+    "## Required Deliverables",
+    "Skill Loadout",
+    "MCP / Tool Loadout",
+    "Fallback Plan",
+    "Capability Gap List",
+    "Adoption Notes"
+  ],
+  "meta-sentinel": [
+    "## Required Deliverables",
+    "Threat Model",
+    "Permission Matrix",
+    "Hook Configuration",
+    "Rollback Rules"
+  ],
+  "meta-librarian": [
+    "## Required Deliverables",
+    "Memory Architecture",
+    "Continuity Protocol",
+    "Retention Policy",
+    "Recovery Evidence"
+  ],
+  "meta-prism": [
+    "## Required Deliverables",
+    "Assertion Report",
+    "Verification Closure Packet",
+    "Drift Findings",
+    "Closure Conditions"
+  ],
+  "meta-scout": [
+    "## Required Deliverables",
+    "Capability Baseline",
+    "Candidate Comparison",
+    "Security Notes",
+    "Adoption Brief"
+  ]
+};
 
 function assert(condition, message) {
   if (!condition) {
@@ -231,17 +312,13 @@ async function validateWorkflowContract() {
     );
   }
 
-  for (const field of [
-    "verifyPassed",
-    "summaryClosed",
-    "singleDeliverableMaintained",
-    "deliverableChainClosed"
-  ]) {
-    assert(
-      contract.runDiscipline?.publicDisplayRequires?.includes(field),
-      `workflow-contract.json publicDisplayRequires must include ${field}.`
-    );
-  }
+  const publicDisplayRequires = contract.runDiscipline?.publicDisplayRequires;
+  assert(Array.isArray(publicDisplayRequires), "workflow-contract.json must define publicDisplayRequires as an array.");
+  assert(
+    JSON.stringify([...publicDisplayRequires].sort()) ===
+      JSON.stringify([...EXPECTED_PUBLIC_DISPLAY_REQUIRES].sort()),
+    "workflow-contract.json publicDisplayRequires must exactly match the canonical public-display gate set."
+  );
 
   assert(
     contract.departmentVisualPolicies?.game?.defaultMode === "generate_or_self_create",
@@ -272,6 +349,12 @@ async function validateClaudeAgents() {
       `${file} frontmatter name must match filename.`
     );
     assertNoForbiddenMarkers(raw, filePath);
+    for (const marker of EXPECTED_AGENT_WEAPON_MARKERS[frontmatter.name] ?? []) {
+      assert(
+        raw.includes(marker),
+        `${file} must include weapon-pack marker ${marker}.`
+      );
+    }
     ids.push(frontmatter.name);
   }
 
@@ -414,7 +497,26 @@ async function validatePortableSkill() {
   ]) {
     assert(skillSource.includes(expected), `Portable skill is missing ${expected}`);
   }
+  for (const marker of [
+    "### Station Deliverable Contract (Mandatory)",
+    "Required Genesis deliverables",
+    "Required Artisan deliverables",
+    "Required Conductor deliverables"
+  ]) {
+    assert(
+      skillSource.includes(marker),
+      `Portable skill is missing station-deliverable marker ${marker}.`
+    );
+  }
   assertNoForbiddenMarkers(skillSource, skillSourcePath, ["AskUserQuestion"]);
+  const descriptionMatch = skillSource.match(/description:\s*\|\r?\n([\s\S]*?)\r?\n---/);
+  if (descriptionMatch) {
+    const descriptionLength = descriptionMatch[1].trim().length;
+    assert(
+      descriptionLength <= 1024,
+      `Canonical meta-theory skill description is too long for Codex compatibility (${descriptionLength} > 1024).`
+    );
+  }
 
   const sharedSkill = await fs.readFile(
     path.join(repoRoot, "shared-skills", "meta-theory.md"),
@@ -537,13 +639,60 @@ async function validateGitignore() {
   }
 }
 
+function collectClaudeHookCommands(hooksRoot) {
+  const commands = [];
+  if (!hooksRoot || typeof hooksRoot !== "object") {
+    return commands;
+  }
+  for (const entries of Object.values(hooksRoot)) {
+    if (!Array.isArray(entries)) {
+      continue;
+    }
+    for (const entry of entries) {
+      for (const hook of entry.hooks ?? []) {
+        if (hook?.type === "command" && typeof hook.command === "string") {
+          commands.push(hook.command.trim());
+        }
+      }
+    }
+  }
+  return commands;
+}
+
 async function validateClaudeSettings() {
   const settings = JSON.parse(
     await fs.readFile(path.join(repoRoot, ".claude", "settings.json"), "utf8")
   );
   assert(settings.permissions?.deny?.length >= 1, ".claude/settings.json is missing deny rules.");
-  assert(settings.hooks?.PreToolUse?.length >= 1, ".claude/settings.json is missing PreToolUse hooks.");
-  assert(settings.hooks?.SubagentStart?.length >= 1, ".claude/settings.json is missing SubagentStart hooks.");
+  const hooks = settings.hooks;
+  assert(hooks?.PreToolUse?.length >= 1, ".claude/settings.json is missing PreToolUse hooks.");
+  assert(hooks?.PostToolUse?.length >= 1, ".claude/settings.json is missing PostToolUse hooks.");
+  assert(hooks?.SubagentStart?.length >= 1, ".claude/settings.json is missing SubagentStart hooks.");
+  assert(hooks?.Stop?.length >= 1, ".claude/settings.json is missing Stop hooks.");
+
+  assert(
+    hooks.PreToolUse[0]?.matcher === "Bash",
+    ".claude/settings.json PreToolUse must target Bash (dangerous bash + git push gates)."
+  );
+  assert(
+    hooks.PostToolUse[0]?.matcher === "Edit|Write",
+    ".claude/settings.json PostToolUse must target Edit|Write (format / typecheck / console.log warn)."
+  );
+  assert(
+    hooks.SubagentStart[0]?.matcher === "*",
+    ".claude/settings.json SubagentStart must use matcher *."
+  );
+  assert(
+    hooks.Stop[0]?.matcher === "*",
+    ".claude/settings.json Stop must use matcher *."
+  );
+
+  const found = collectClaudeHookCommands(hooks).sort();
+  const expected = [...EXPECTED_CLAUDE_HOOK_COMMANDS].sort();
+  assert(
+    JSON.stringify(found) === JSON.stringify(expected),
+    `.claude/settings.json hook commands must match documented 7-hook coverage (expected ${expected.length}, found ${found.length}).`
+  );
 }
 
 async function validateMcpConfig() {

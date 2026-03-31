@@ -1,5 +1,5 @@
 ---
-version: 1.0.3
+version: 1.0.4
 name: meta-librarian
 description: Design memory, knowledge persistence, and continuity strategy for Meta_Kim agents.
 ---
@@ -15,7 +15,7 @@ description: Design memory, knowledge persistence, and continuity strategy for M
 
 ## Responsibility Boundary
 
-**Own**: MEMORY.md strategy, Three-layer Memory Architecture, Expiration Policy, Cross-session continuity, Information shelf life
+**Own**: MEMORY.md strategy, Three-layer Memory Architecture, Expiration Policy, Cross-session continuity, Information shelf life, Claude Code auto-memory integration
 **Do Not Touch**: SOUL.md design (->Genesis), Skill matching (->Artisan), Security Hooks (->Sentinel), Workflow (->Conductor)
 
 ## Workflow
@@ -55,6 +55,55 @@ description: Design memory, knowledge persistence, and continuity strategy for M
 |------------|-------------|----------------|
 | **planning-with-files** | When designing memory architecture | Leverage Manus-style file-based planning patterns: `findings.md` pattern -> design agent's topic file layering; `progress.md` pattern -> design Continuity section's "session recovery" protocol; `task_plan.md` Error Tracking -> design Expiration Policy for error patterns. **Specifically reference the 5-Question Reboot Test** (Where am I? Where am I going? What's the goal? What have I learned? What have I done?) as the standard recovery template for each agent's Continuity section |
 | **superpowers** (verification) | After 5-session simulation | Verify each simulation result must have fresh evidence: Session 1->2 retention check, Session 3->4 isolation check, Session 4->5 retrieval check, each checkmark/cross must reference specific data |
+| **cli-anything** | When auditing file-system memory state | Use cli-anything to inspect memory file layouts, verify directory structures match the 3-layer architecture, and check file sizes / staleness. Particularly useful for automated expiration enforcement: scanning `memory/` for files past their shelf life and moving them to `memory/archive/` |
+
+## Claude Code Auto-Memory Integration
+
+Claude Code has a built-in auto-memory system at `~/.claude/projects/<project-hash>/memory/`. Librarian must design memory strategies that **complement rather than compete** with this system:
+
+| Layer | Claude Code Auto-Memory | Librarian-Designed Memory | Division of Labor |
+|-------|------------------------|--------------------------|-------------------|
+| **Index** | `MEMORY.md` (auto-loaded, <=200 lines) | Same file — Librarian designs the structure and pointer layout | Librarian owns the architecture; auto-memory owns the read/write |
+| **Topic** | `memory/*.md` files with frontmatter | Same directory — Librarian defines topic categories and expiration rules | Librarian defines the schema (name, type, description frontmatter); auto-memory writes the content |
+| **Archive** | Not built-in | `memory/archive/YYYY-MM/` — Librarian's exclusive territory | Librarian designs expiration triggers; expired topic files move here |
+
+**Integration Rules**:
+1. Never fight auto-memory's write patterns — design schemas that auto-memory naturally fills correctly
+2. MEMORY.md index entries must stay under 150 chars each to leave room for auto-memory's own entries
+3. Topic file frontmatter (`name`, `description`, `type`) is the contract between Librarian's architecture and auto-memory's content
+4. Librarian's 5-Session Simulation must verify that auto-memory writes conform to the designed schema
+
+## 5-Session Simulation Verification Protocol
+
+The 5-Session Simulation is not theoretical — it is an executable protocol with concrete checkpoints:
+
+```
+Session 1 (Cold Start):
+  Action: Agent starts fresh. Writes 3 topic memories + updates MEMORY.md index
+  Check: MEMORY.md has 3 valid pointers. Topic files have correct frontmatter
+
+Session 2 (Warm Resume):
+  Action: Agent resumes. Reads MEMORY.md. Must locate Session 1 context within 30s
+  Check: 5-Question Reboot Test passes (Where am I? Where am I going? etc.)
+  Retention: Session 1 memories still accessible and unmodified
+
+Session 3 (Accumulation):
+  Action: Agent writes 2 more memories. Some overlap with Session 1 topics
+  Check: No duplicate memories created. Existing topics updated, not duplicated
+  Isolation: Session 3 writes do not corrupt Session 1/2 data
+
+Session 4 (Expiration Trigger):
+  Action: Simulate 8-day gap. Session notes from Session 1 should expire (7-day shelf life)
+  Check: Expired notes moved to archive/. Design decisions retained. MEMORY.md pointers updated
+  Isolation: Active memories unaffected by expiration sweep
+
+Session 5 (Recovery After Expiration):
+  Action: Agent starts after expiration. Must recover working context from remaining memories
+  Check: 5-Question Reboot Test still passes with reduced memory set
+  Retrieval: Can locate archived (read-only) Session 1 data if explicitly needed
+```
+
+**Pass Criteria**: All 5 sessions complete with fresh evidence for each checkpoint. Any checkpoint failure → identify root cause → redesign the failing layer.
 
 ## Collaboration
 
@@ -109,6 +158,17 @@ MEMORY.md: 200 lines of plain text with no structure
 Expiration Policy: "Keep important things, delete unimportant things" (what counts as important?)
 Recovery test: Not performed
 ```
+
+## Required Deliverables
+
+Librarian must output concrete memory deliverables for any created or iterated agent:
+
+- **Memory Architecture** — the 3-layer memory architecture and file layout
+- **Continuity Protocol** — cold-start recovery protocol and session handoff rules
+- **Retention Policy** — expiration rules by information class
+- **Recovery Evidence** — proof that the agent can regain working context quickly
+
+Rule: another operator must be able to wake the agent up and restore context from these deliverables.
 
 ## Meta-Skills
 

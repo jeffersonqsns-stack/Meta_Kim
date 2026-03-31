@@ -24,7 +24,7 @@ Need an agent for X → Search who declares "Own X" → Call the best match
 
 ---
 
-## 2. COMPLETE 6-STAGE FLOW (Detailed)
+## 2. CORE 8-STAGE EXECUTION SPINE (Detailed)
 
 | Stage | Name | Key Question |
 |-------|------|-------------|
@@ -33,7 +33,23 @@ Need an agent for X → Search who declares "Own X" → Call the best match
 | 3 | **Thinking** | How should we approach it? |
 | 4 | **Execution** | Delegate to agents |
 | 5 | **Review** | Is the result correct? |
-| 6 | **Evolution** | What did we learn? |
+| 6 | **Meta-Review** | Are the review standards themselves sound? |
+| 7 | **Verification** | Did the fixes actually solve the issues? |
+| 8 | **Evolution** | What structural learning should carry forward? |
+
+### Hidden Skeleton State Model
+
+The 8-stage spine is the **human-readable orchestration surface**. Underneath it, Meta_Kim may maintain a **hidden state skeleton** so the run stays governable without turning the system into a visible bureaucracy:
+
+| State Layer | Example Values | Primary Owner | Why it exists |
+|-------------|----------------|---------------|---------------|
+| `stageState` | `Critical -> Fetch -> Thinking -> Execution -> Review -> Meta-Review -> Verification -> Evolution` | Conductor | Canonical stage progression |
+| `controlState` | `normal / skip / interrupt / intentional-silence / iteration` | Conductor | Modify stage dealing without inventing new pseudo-stages |
+| `gateState` | `planning-open / planning-passed / review-open / verification-open / verification-closed / synthesis-ready` | Warden + Prism | Separate stage completion from gate clearance |
+| `surfaceState` | `debug-surface / internal-ready / public-ready` | Warden | Prevent dirty runs from being presented as completed/public |
+| `capabilityState` | `covered / partial / gap / escalated` | Scout + Artisan | Keep Fetch results explicit instead of hand-wavy |
+
+**Rule**: this is an **invisible skeleton only**. The user-facing workflow still speaks in stage language and concrete deliverables. State labels exist to support gates, skips, interrupts, and evolution logging — not to become a second product interface.
 
 ---
 
@@ -113,9 +129,9 @@ On receiving an escalation signal: re-enter Fetch (Stage 2) to find a more capab
 
 | File Changes | Complexity | Flow |
 |-------------|-----------|------|
-| 1 file, pure logic/style/comments | Simple | Execution → Review → Evolution |
-| ≥2 files OR ≥2 modules | Medium | Full 6-stage flow |
-| >5 files OR cross-layer | Complex | Full 6-stage + Meta-Review |
+| 1 file, pure logic/style/comments | Simple | Execution → Review → Verification → Evolution |
+| ≥2 files OR ≥2 modules | Medium | Full 8-stage spine |
+| >5 files OR cross-layer | Complex | Full 8-stage spine; allow business-workflow revision / summary / feedback / evolve phases when the run contract requires them |
 
 ### Critical Stage Output
 
@@ -137,9 +153,9 @@ On receiving an escalation signal: re-enter Fetch (Stage 2) to find a more capab
 
 ## STAGE 2: Fetch — Discover Available Agents (Detailed)
 
-**Purpose**: Search for agents whose "Own" boundary matches the capability needed.
+**Purpose**: Search for agents / skills whose "Own" boundary matches the capability needed.
 
-**⚠️ Execute all 3 steps — no skipping. Fallback chain (aligns with agent-teams-playbook):**
+**⚠️ Execute all 5 steps in order — no skipping.**
 
 **Step 1 — Local agent scan**:
 ```
@@ -149,17 +165,35 @@ Extract each agent's "Own / Do Not Touch" boundaries
 Score match: does "Own" cover the needed capability?
 ```
 
-**Step 2 — Global capability search** (if no perfect local match):
+**Step 2 — Capability index search** (if no perfect local match):
 ```
+IF .claude/capability-index/global-capabilities.json is missing OR stale for the current machine
+  → run npm run discover:global first
+
 Read .claude/capability-index/global-capabilities.json
 Search for agents declaring the needed capability
 Score match
 ```
 
-**Step 3 — Generic fallback** (if no match found):
+**Step 3 — External skill discovery** (if the local + indexed baseline still has no perfect match):
+```
+Invoke the available findskill / find-skills capability
+Search the Skills.sh ecosystem for the missing capability
+Record what was searched and what was found
+```
+
+**Step 4 — Specialist ecosystem fallback** (if the external search still finds no clean winner):
+```
+Search known specialist ecosystems already integrated by Meta_Kim:
+- everything-claude-code agents
+- gstack specialist skills
+- other globally installed runtime-native agents / skills from the capability index
+```
+
+**Step 5 — Generic fallback** (if no match found):
 ```
 Mark capabilityGap: "no agent declares Own [capability]"
-Invoke Task(subagent_type="general-purpose") with clear constraints
+Invoke Task(subagent_type="generalPurpose") with clear constraints
 ```
 
 ### Match Scoring
@@ -169,7 +203,7 @@ Invoke Task(subagent_type="general-purpose") with clear constraints
 | 3 | Perfect match — "Own" covers exactly what is needed | Invoke directly |
 | 2 | Partial match — covers most, some gaps | Invoke + note gaps |
 | 1 | Weak match — tangentially related | Invoke + note significant gaps |
-| 0 | No match | Capability gap detected → Step 3 fallback |
+| 0 | No match | Capability gap detected → Step 5 fallback |
 
 ### Tier-Aware Routing
 
@@ -198,6 +232,12 @@ This is a **preference**, not a hard rule — if the lightweight agent escalates
 ```json
 {
   "capabilityNeeded": "code quality review",
+  "searchTrail": [
+    "local-agents",
+    "global-capability-index",
+    "findskill",
+    "specialist-ecosystem"
+  ],
   "candidates": [
     { "name": "code-reviewer", "source": "global", "score": 3, "matchReason": "Own covers code quality review" }
   ],
@@ -242,13 +282,43 @@ Break Stage 1's task into independent sub-tasks:
       "description": "what specifically to do",
       "owner": "agent name from Stage 2",
       "parallel": true,
+      "fileScope": ["file-or-module-a", "file-or-module-b"],
       "constraints": ["boundary1", "dependency1"]
     }
   ]
 }
 ```
 
-### Step 4: Decision Record
+### Step 4: `cardDeck` (stage-card rhythm) + delivery plan
+
+Thinking must translate the plan into a **`cardDeck`** — the canonical Stage 3 artifact for stage-card rhythm (sequencing / lanes — not legacy “Planning / Guidance / Direction” card names). Each entry is one **stage-card intent** (priority, lane, skip/interrupt hooks). Conductor owns concrete dealing on the dispatch board; Thinking outputs `cardDeck` constraints and decomposition only.
+
+```json
+{
+  "cardDeck": [
+    {
+      "stage": "Thinking",
+      "priority": 8,
+      "laneIntent": "decompose-and-surface-risks",
+      "skipCondition": "task is simple and already decomposed",
+      "interruptTrigger": "security-risk or scope-drift"
+    }
+  ],
+  "deliveryShellPlan": [
+    {
+      "audience": "user",
+      "channel": "conversation",
+      "shell": "structured-status"
+    }
+  ],
+  "interruptChannels": [
+    { "source": "sentinel", "severity": "critical", "action": "pause and front-load interrupt" },
+    { "source": "prism", "severity": "high", "action": "insert before next execution stage" }
+  ]
+}
+```
+
+### Step 5: Decision Record
 
 ```json
 {
@@ -256,6 +326,21 @@ Break Stage 1's task into independent sub-tasks:
   "reason": "why this path was chosen over alternatives",
   "rejectedOptions": [{ "path": "B", "reason": "why not chosen" }],
   "risks": [{ "type": "shared-component", "mitigation": "notify user" }]
+}
+```
+
+### Thinking Stage Output Contract
+
+```json
+{
+  "subTasks": [],
+  "cardDeck": [],
+  "deliveryShellPlan": [],
+  "interruptChannels": [],
+  "reviewPlan": ["code-quality", "security"],
+  "metaReviewGate": "complexity=complex OR abnormal review confidence",
+  "verificationGate": "all failed assertions must be re-run with fresh evidence",
+  "evolutionFocus": ["pattern reuse", "boundary drift", "process bottlenecks"]
 }
 ```
 
@@ -282,6 +367,13 @@ Task(
 ### Step 2: Parallel/Sequential Decision
 - Sub-tasks' file sets do not overlap → **parallel** invocation
 - File sets overlap → **sequential** invocation
+
+### Step 2.5: Execute in stage order
+
+Execution must respect the Stage 3 **`cardDeck`** (stage-card sequence / control interrupts — delegated to Conductor for actual dealing):
+- Run stages in agreed order unless a control interrupt (silence / skip / risk) is active
+- Insert intentional silence when the overload rule is hit
+- Use the selected Delivery Shell when reporting progress or handing off results
 
 ### Step 3: Result Aggregation
 - Which files were modified
@@ -382,15 +474,81 @@ Key difference from simple "max 2 rounds": the fix is **automatic** — the Revi
 
 ---
 
-## STAGE 6: Evolution — Extract Learnings (Detailed)
+## STAGE 6: Meta-Review — Review the Review Standards (Detailed)
 
-6-dimension evolution detection (execute after every task):
+**Trigger**: Complex tasks, abnormal pass rates, or when the user explicitly asks for stricter governance.
+
+Meta-Review does **not** re-review the implementation itself. It reviews whether Stage 5's review criteria were strong enough:
+
+| Check Dimension | Question | Fail Action |
+|----------------|----------|-------------|
+| Assertion coverage | Did the review cover all critical dimensions? | Add missing assertions and re-run review |
+| Assertion strength | Could a clearly wrong result still pass? | Tighten weak assertions and re-run review |
+| Criteria consistency | Did standards drift materially from comparable past runs? | Record drift and request Warden arbitration |
+
+**Trigger heuristics**:
+- Review pass rate > 0.9 but output still looks suspect
+- Review pass rate < 0.3 but output looks materially sound
+- Security-sensitive or cross-layer changes
+
+---
+
+## STAGE 7: Verification — Confirm the Fixes (Detailed)
+
+**Trigger**: Stage 5 or Stage 6 produced revision work.
+
+Verification is an independent re-check using fresh evidence, not a trust-based acknowledgment:
+
+| Check | Method |
+|------|--------|
+| Issue closure | Re-run the assertion that originally failed |
+| Regression guard | Confirm the fix did not break an adjacent path |
+| Fresh evidence | Cite current files / outputs / logs, not memory of what changed |
+
+**Verification output**:
+```json
+{
+  "verified": true,
+  "remainingIssues": [],
+  "evidence": ["current file or runtime evidence"]
+}
+```
+
+If verification fails, route back to Execution with the accumulated issue list.
+
+### Rollback Protocol
+
+When verification reveals that fixes caused more damage than they solved, or when risk exceeds the original task scope, invoke the rollback protocol:
+
+| Rollback Level | Trigger | Action |
+|---------------|---------|--------|
+| **File-level** | Single file regression detected | Restore the specific file from last known good state (`git checkout HEAD~1 -- <file>`) |
+| **Sub-task level** | One sub-task's changes broke adjacent paths | Revert only that sub-task's file set; re-run Review on remaining changes |
+| **Full rollback** | Cross-contamination across >3 files; original task assumptions invalidated | `git stash` all uncommitted changes; return to Stage 1 Critical with a revised scope |
+| **Partial rollback** | Some sub-tasks succeeded, others failed | Keep successful sub-tasks; rollback failed ones; re-enter Stage 3 Thinking to re-decompose the failed portion |
+
+**Rollback Decision Flow**:
+```
+Verification FAIL
+  → Count affected files
+  → IF 1 file: File-level rollback → Re-run Stage 4 for that file only
+  → IF 2-3 files in same sub-task: Sub-task level rollback
+  → IF >3 files OR cross-module: Notify user → Full or Partial rollback (user decides)
+```
+
+**Iron Rule**: Rollback is not failure. Rollback is the system demonstrating it knows when to stop making things worse. A system without rollback capability is a system that can only move forward into disaster.
+
+---
+
+## STAGE 8: Evolution — Extract Learnings (Detailed)
+
+Use the **5+1 evolution model** after every task: the canonical 5 structural dimensions, plus Scars codification as an always-on overlay.
 
 | Dimension | What to Detect | Amplification Action |
 |-----------|---------------|---------------------|
 | Pattern reuse | Can this solution become a reusable pattern? | Extract as new skill/agent |
 | Agent boundaries | Do boundaries need adjustment? | Trigger split/merge |
-| Guidance optimization | Can interaction path be shorter? | Update card trigger conditions |
+| Rhythm optimization | Can interaction path be shorter? | Tighten stage or control-card trigger conditions (Conductor-owned dealing) |
 | Process bottlenecks | Which step is slowest/error-prone? | Adjust orchestration |
 | Capability coverage | Any new gaps discovered? | Trigger Scout or Type B |
 | **Scars codification** | Skip-Level/Boundary Violation/Process Gap? | Record structured Scar → prevention rule |
@@ -401,8 +559,8 @@ Key difference from simple "max 2 rounds": the fix is **automatic** — the Revi
 |-----------|-----------|--------|
 | Pattern reuse | Reusable pattern found | → Extract as skill/template → register |
 | Agent boundaries | Boundaries unreasonable | → Trigger split/merge |
-| Guidance optimization | Interaction path redundant | → Update card triggers |
-| Process bottlenecks | Bottleneck found | → Adjust Card Deck priority |
+| Rhythm optimization | Interaction path redundant | → Update stage/control triggers (via Conductor) |
+| Process bottlenecks | Bottleneck found | → Adjust stage-card priority / sequencing (Conductor) |
 | Capability coverage | Gap discovered | → Scout or Type B |
 | Scars | Issue detected | → Record Scar → update Critical checklist |
 
@@ -419,25 +577,51 @@ scar:
   prevention_rule: "specific rule for next time"
 ```
 
+### Evolution Artifacts Storage
+
+Evolution outputs must be persisted to specific locations — not left floating in conversation context:
+
+| Artifact Type | Storage Location | Lifecycle |
+|--------------|-----------------|-----------|
+| **Reusable Patterns** | `memory/patterns/{pattern-name}.md` | Permanent; reviewed quarterly by Librarian |
+| **Scars** | `memory/scars/{scar-id}.yaml` | Permanent; prevention rules feed back into Critical stage checklists |
+| **New Skills** (extracted) | `.claude/skills/{skill-name}/SKILL.md` | Permanent; created via skill-creator, validated via Type D Review |
+| **Agent Boundary Adjustments** | `.claude/agents/{agent}.md` (direct edit) | Immediate; triggers `npm run sync:runtimes` |
+| **Rhythm Optimizations** | Recorded in `contracts/workflow-contract.json` or Conductor's card-deck defaults | Immediate; affects next run's dispatch board |
+| **Capability Gap Records** | `memory/capability-gaps.md` | Until resolved; Scout monitors and closes when filled |
+
+**Storage Rule**: If an evolution artifact has no defined storage location, it does not count as "captured". The 5+1 model's amplification actions are only complete when the artifact is written to disk and indexed.
+
 ---
 
-## EVENT CARD DECK
+## STAGE SPINE VS CONTROL CARDS
+
+**8-stage spine** (always the backbone): Critical → Fetch → Thinking → Execution → Review → Meta-Review → Verification → Evolution. Business workflow **phase names** in `contracts/workflow-contract.json` (e.g. `direction`, `planning`, `execution`) are a separate vocabulary for department runs — do not relabel spine stages as “Guidance / Direction / Planning cards.”
+
+**Control / overlay cards** (rhythm and safety — Conductor deals; not a second spine):
 
 | Card | Trigger Condition | Action |
 |------|-------------------|--------|
-| Scope Contraction Card | Environment state trigger: repository too large / multiple files with same name / historical implementation branching | First ask "which version to change this time", then execute |
-| Guidance Card | Requirements vague | Follow-up Probe 2 rounds |
-| Direction Card | Requirements clear | Record intent |
-| Planning Card | High complexity | Task decomposition |
-| Execution Card | Planning complete | Assign tasks |
-| Review Card | Execution complete | Quality review |
-| Meta-Review Card | Review complete | Boundary Violation detection |
-| Risk Card | Involves shared components / auth logic / globally shared interfaces / high-frequency multi-person edit areas | Must surface; if necessary, risk governance meta Interrupts |
-| Suggestion Card | User clearly hesitates or pauses, but interruption cost is high | Give a low-cost forward plan OR Intentional Silence without interruption |
-| Silence Card | After ≥3 consecutive rounds of high-density pushes | Proactively pause, let the user digest |
-| Skip Card | Attention cost > benefit | Simplify and skip |
-| Interrupt Card | Emergency state | Prioritize |
-| Iteration Card | Acceptance not passed < 3 rounds | Loop again |
+| Scope Contraction | Repository too large / duplicate filenames / branching history | Ask which target to change, then proceed |
+| Risk | Shared components / auth / global interfaces / hot multi-editor areas | Surface; may trigger interrupt path |
+| Suggestion | User hesitates; interruption costly | Low-cost forward plan or intentional silence |
+| Silence | ≥3 consecutive high-density push rounds | Pause for digestion |
+| Skip | Attention cost > benefit | Simplify or defer |
+| Interrupt | Emergency or Sentinel-critical | Prioritize and reorder |
+| Iteration | Acceptance not closed within agreed rounds | Loop with explicit gate |
+
+Spine coverage reference (what each stage is for — not separate “card” names):
+
+| Spine stage | Role |
+|-------------|------|
+| Critical | Clarity, classification, skip-level checks |
+| Fetch | Capability discovery (Search–Match–Invoke) |
+| Thinking | Options, risks, decomposition |
+| Execution | Delegated work |
+| Review | Result validation (Fetch-first reviewers) |
+| Meta-Review | Review-of-review when triggered |
+| Verification | Fresh-evidence re-check after revisions |
+| Evolution | Learnings and scars |
 
 ---
 

@@ -10,7 +10,7 @@
 <p>
   <img alt="Runtime" src="https://img.shields.io/badge/runtime-Claude%20Code%20%7C%20Codex%20%7C%20OpenClaw-111827"/>
   <img alt="Method" src="https://img.shields.io/badge/method-Meta%20-%3E%20Organizational%20Mirroring%20-%3E%20Rhythm%20Orchestration%20-%3E%20Intent%20Amplification-0f766e"/>
-  <img alt="Skill" src="https://img.shields.io/badge/skill-meta--theory%20v1.0.3-7c3aed"/>
+  <img alt="Skill" src="https://img.shields.io/badge/skill-meta--theory%20v1.4.4-7c3aed"/>
   <img alt="License" src="https://img.shields.io/badge/license-MIT-green"/>
 </p>
 
@@ -111,7 +111,7 @@ This synchronizes the 8 meta agents from `.claude/agents/` to all three runtime 
 npm run deps:install
 ```
 
-Installs the 8 community meta-skills that Meta_Kim depends on (agent-teams-playbook, findskill, superpowers, everything-claude-code, planning-with-files, cli-anything, gstack, skill-creator) into `~/.claude/skills/`. **Required on first setup.**
+Installs the 9 community meta-skills that Meta_Kim depends on (`agent-teams-playbook`, `findskill`, `hookprompt`, `superpowers`, `everything-claude-code`, `planning-with-files`, `cli-anything`, `gstack`, `skill-creator`) into `~/.claude/skills/`. **Required on first setup.**
 
 To **update** all dependencies to the latest version:
 
@@ -195,6 +195,8 @@ At the engineering level, it organizes:
 - `workspaces`: local runtime operating spaces
 - `sync / validate / eval`: synchronization, validation, and acceptance tooling
 
+Under the hood, Meta_Kim may also use a **hidden state skeleton** for stage progression, gates, interrupts, and display readiness. This skeleton is not a second user interface; it is the invisible governance backbone that keeps `Critical / Fetch / Thinking / Review` and card dealing consistent.
+
 ## The Meta Philosophy
 
 In Meta_Kim:
@@ -228,6 +230,34 @@ flowchart LR
 - `Intent Amplification`: how to complete
 
 Remove any one of these and the method is incomplete.
+
+## Development governance spine (complex work)
+
+For **Type C development governance** (multi-file / cross-layer work), Meta_Kim follows an eight-stage spine. The early chain lines up with the **three iron rules**: clarify before guessing, search before assuming, verify before trusting — with **Thinking** in the middle to shape the card deck and delivery shell.
+
+**Eight-stage spine** (left to right; compatible with Mermaid 8.x viewers):
+
+```mermaid
+graph LR
+  S1[1 Critical] --> S2[2 Fetch]
+  S2 --> S3[3 Thinking]
+  S3 --> S4[4 Execution]
+  S4 --> S5[5 Review]
+  S5 --> S6[6 Meta-Review]
+  S6 --> S7[7 Verification]
+  S7 --> S8[8 Evolution]
+```
+
+**Iron rules on the early chain** (top to bottom; node text avoids `>` so older Mermaid parsers do not choke):
+
+```mermaid
+graph TD
+  CR[Critical beats Guessing] --> FE[Fetch beats Assuming]
+  FE --> TH[Thinking shapes deck and shell]
+  TH --> RV[Review beats Trusting]
+```
+
+**meta-conductor** tracks `stageState` / `controlState` (including skip / interrupt / iteration). **meta-warden** and **meta-prism** own **gates** (`gateState`, verification closure). That **hidden skeleton** is not a second product UI; it keeps dealing rhythm and public-display discipline consistent. Details: `.claude/skills/meta-theory/references/dev-governance.md`.
 
 ## How the System Works
 
@@ -399,7 +429,7 @@ Generates `.claude/capability-index/global-capabilities.json` for use by the met
 
 ### `npm run deps:install`
 
-Install the 8 community meta-skills that Meta_Kim depends on. Runs `install-deps.sh` under the hood.
+Install the 9 community meta-skills that Meta_Kim depends on. Runs `install-deps.sh` under the hood.
 
 ### `npm run deps:update`
 
@@ -411,11 +441,23 @@ Run this to validate the canonical source files, agent definitions, SKILL.md syn
 
 ### `npm run eval:agents`
 
-Run this for runtime-level acceptance testing. It spawns each of the 8 meta agents and validates their boundary behavior against predefined test cases.
+Run this for runtime-level acceptance testing. It checks the available runtimes and validates boundary behavior against predefined test cases.
+
+- Available runtimes that pass their smoke tests are reported as `passed`
+- Optional runtimes that are not installed / not currently reachable are reported as `skipped`
+- Real runtime regressions are reported as `failed`
+
+**Windows / PATH:** A Node process started from a GUI app or an editor task may inherit a **shorter `PATH`** than your usual terminal (so `claude` works in a shell but not under `npm run eval:agents`). The script first looks for `%APPDATA%\npm\{name}.cmd`, then runs `where.exe` with an **enriched PATH** (common install folders prepended). If it still fails, set an absolute path:
+
+- `META_KIM_CLAUDE_BIN`
+- `META_KIM_CODEX_BIN`
+- `META_KIM_OPENCLAW_BIN`
 
 ### `npm run verify:all`
 
-Run this before publishing, shipping, or after substantial runtime changes. It performs the full validation and acceptance pass (validate + eval combined).
+Run this before publishing, shipping, or after substantial runtime changes. It performs the full validation and acceptance pass (`validate` + `eval:agents`).
+
+`verify:all` now fails only when there is a real validation/runtime failure. Missing optional CLIs are surfaced as skipped in the eval report rather than being mislabeled as hard failures.
 
 ### `npm run prepare:openclaw-local`
 

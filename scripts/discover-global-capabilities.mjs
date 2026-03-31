@@ -11,6 +11,10 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, "..");
 
 // ========== 平台定义 ==========
 
@@ -31,8 +35,8 @@ const PLATFORMS = {
     name: "OpenClaw",
     baseDir: () => path.join(os.homedir(), ".openclaw"),
     scanners: {
-      agents: async (baseDir) => scanTomlFiles(path.join(baseDir, "agents")),
-      skills: async (baseDir) => scanMarkdownFilesRecursive(path.join(baseDir, "skills")),
+      agents: async (baseDir) => scanOpenClawAgents(baseDir),
+      skills: async (baseDir) => scanSkillFilesRecursive(path.join(baseDir, "skills")),
       hooks: async (baseDir) => scanHookFiles(path.join(baseDir, "hooks")),
       commands: async (baseDir) => scanCommandFiles(path.join(baseDir, "commands")),
     },
@@ -42,7 +46,7 @@ const PLATFORMS = {
     baseDir: () => path.join(os.homedir(), ".codex"),
     scanners: {
       agents: async (baseDir) => scanTomlFilesRecursive(path.join(baseDir, "agents")),
-      skills: async (baseDir) => scanMarkdownFilesRecursive(path.join(baseDir, "skills")),
+      skills: async (baseDir) => scanSkillFilesRecursive(path.join(baseDir, "skills")),
       commands: async (baseDir) => scanCommandFiles(path.join(baseDir, "commands")),
     },
   },
@@ -55,6 +59,15 @@ async function* walkDir(dir, maxDepth = 10) {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
+      if (
+        entry.name === "node_modules" ||
+        entry.name === ".git" ||
+        entry.name === "downloads" ||
+        entry.name === "dist" ||
+        entry.name === "build"
+      ) {
+        continue;
+      }
       if (entry.isDirectory()) {
         const depth = fullPath.split(path.sep).length - dir.split(path.sep).length;
         if (depth < maxDepth) {
@@ -147,6 +160,96 @@ async function scanTomlFilesRecursive(dir) {
   return results;
 }
 
+async function scanOpenClawAgents(baseDir) {
+  const results = [];
+  const configPath = path.join(baseDir, "openclaw.json");
+  const seen = new Set();
+
+  try {
+    const content = await fs.readFile(configPath, "utf8");
+    const config = JSON.parse(content);
+    const list = config?.agents?.list ?? [];
+
+    for (const agent of list) {
+      if (!agent?.id || seen.has(agent.id)) {
+        continue;
+      }
+
+      const workspacePath =
+        typeof agent.workspace === "string" && agent.workspace.trim()
+          ? agent.workspace
+          : path.join(baseDir, `workspace-${agent.id}`);
+
+      let stat = null;
+      try {
+        stat = await fs.stat(workspacePath);
+      } catch {}
+
+      results.push({
+        id: agent.id,
+        path: workspacePath,
+        size: stat?.size ?? 0,
+        modified: stat?.mtime ?? new Date(0),
+        metadata: {
+          name: agent.name || agent.id,
+          model:
+            agent.model ||
+            config?.agents?.defaults?.model?.primary ||
+            config?.agents?.defaults?.model ||
+            "unknown",
+          workspace: workspacePath,
+          source: "openclaw.json",
+          default: Boolean(agent.default),
+        },
+      });
+      seen.add(agent.id);
+    }
+  } catch {}
+
+  // Fall back to scanning workspace-* directories for loose/unlisted agents.
+  try {
+    const entries = await fs.readdir(baseDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !entry.name.startsWith("workspace-")) {
+        continue;
+      }
+
+      const agentId = entry.name.replace(/^workspace-/, "");
+      if (!agentId || seen.has(agentId)) {
+        continue;
+      }
+
+      const workspacePath = path.join(baseDir, entry.name);
+      const soulPath = path.join(workspacePath, "SOUL.md");
+      const stat = await fs.stat(workspacePath);
+      const metadata = {
+        name: agentId,
+        workspace: workspacePath,
+        source: "workspace-scan",
+      };
+
+      try {
+        const soulContent = await fs.readFile(soulPath, "utf8");
+        const title = soulContent.match(/^#\s+(.+)$/m)?.[1]?.trim();
+        if (title) {
+          metadata.name = title;
+        }
+      } catch {}
+
+      results.push({
+        id: agentId,
+        path: workspacePath,
+        size: stat.size,
+        modified: stat.mtime,
+        metadata,
+      });
+      seen.add(agentId);
+    }
+  } catch {}
+
+  return results.sort((left, right) => left.id.localeCompare(right.id));
+}
+
 async function scanSkillFiles(dir) {
   const results = [];
   try {
@@ -169,6 +272,30 @@ async function scanSkillFiles(dir) {
       }
     }
   } catch {}
+  return results;
+}
+
+async function scanSkillFilesRecursive(dir) {
+  const results = [];
+  for await (const filePath of walkDir(dir, 6)) {
+    if (path.basename(filePath) !== "SKILL.md") {
+      continue;
+    }
+
+    const stat = await fs.stat(filePath);
+    const relPath = path.relative(dir, filePath);
+    const skillRoot = path.dirname(relPath);
+    const normalizedRoot = skillRoot === "." ? "" : skillRoot.replace(/\\/g, "/");
+    const id = normalizedRoot || "SKILL";
+
+    results.push({
+      id,
+      path: filePath,
+      relativePath: relPath,
+      size: stat.size,
+      modified: stat.mtime,
+    });
+  }
   return results;
 }
 
@@ -555,8 +682,8 @@ async function main() {
     console.log(formatTableOutput(index));
   }
 
-  // 写入索引文件
-  const indexDir = path.join(process.cwd(), ".claude", "capability-index");
+  // 写入索引文件（相对仓库根，避免从子目录调用时写错路径）
+  const indexDir = path.join(repoRoot, ".claude", "capability-index");
   await fs.mkdir(indexDir, { recursive: true });
   await fs.writeFile(
     path.join(indexDir, "global-capabilities.json"),
