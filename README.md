@@ -35,6 +35,39 @@ The result: fewer broken multi-file changes, clearer agent responsibilities, and
 
 > **"Across three runtimes" does NOT mean "three different things."** Meta_Kim is one intent-amplification method — the same 8-stage spine, the same 8 meta agents, the same governance logic. Each runtime (Claude Code, Codex, OpenClaw) simply uses its native structure to host that same discipline. See [Runtime Entry Points](#runtime-entry-points) for details.
 
+## Author and Support
+
+<div align="center">
+  <img src="images/二维码基础款.png" alt="Contact QR" width="560"/>
+  <p>
+    GitHub <a href="https://github.com/KimYx0207">KimYx0207</a> |
+    𝕏 <a href="https://x.com/KimYx0207">@KimYx0207</a> |
+    Website <a href="https://www.aiking.dev/">aiking.dev</a> |
+    WeChat Official Account: <strong>老金带你玩AI</strong>
+  </p>
+  <p>
+    Feishu knowledge base:
+    <a href="https://my.feishu.cn/wiki/OhQ8wqntFihcI1kWVDlcNdpznFf">ongoing updates</a>
+  </p>
+</div>
+
+<div align="center">
+  <table align="center">
+    <tr>
+      <td align="center">
+        <img src="images/微信.jpg" alt="WeChat Pay QR" width="220"/>
+        <br/>
+        <strong>WeChat Pay</strong>
+      </td>
+      <td align="center">
+        <img src="images/支付宝.jpg" alt="Alipay QR" width="220"/>
+        <br/>
+        <strong>Alipay</strong>
+      </td>
+    </tr>
+  </table>
+</div>
+
 ## Paper and Method Basis
 
 The methodological foundation comes from evaluation work on meta-based intent amplification:
@@ -530,39 +563,6 @@ For reading order if you just want to understand:
 1. `README.md` (this file) — start here
 2. `CLAUDE.md` — Claude Code specific guide
 3. `AGENTS.md` — Codex and cross-runtime guide
-
-## Author and Support
-
-<div align="center">
-  <img src="images/二维码基础款.png" alt="Contact QR" width="560"/>
-  <p>
-    GitHub <a href="https://github.com/KimYx0207">KimYx0207</a> |
-    𝕏 <a href="https://x.com/KimYx0207">@KimYx0207</a> |
-    Website <a href="https://www.aiking.dev/">aiking.dev</a> |
-    WeChat Official Account: <strong>老金带你玩AI</strong>
-  </p>
-  <p>
-    Feishu knowledge base:
-    <a href="https://my.feishu.cn/wiki/OhQ8wqntFihcI1kWVDlcNdpznFf">ongoing updates</a>
-  </p>
-</div>
-
-<div align="center">
-  <table align="center">
-    <tr>
-      <td align="center">
-        <img src="images/微信.jpg" alt="WeChat Pay QR" width="220"/>
-        <br/>
-        <strong>WeChat Pay</strong>
-      </td>
-      <td align="center">
-        <img src="images/支付宝.jpg" alt="Alipay QR" width="220"/>
-        <br/>
-        <strong>Alipay</strong>
-      </td>
-    </tr>
-  </table>
-</div>
 
 ## License
 

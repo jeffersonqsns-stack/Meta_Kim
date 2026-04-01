@@ -35,6 +35,39 @@
 
 > **"三个运行时"不是说"三个不同的东西"。** Meta_Kim 是一套意图放大方法论，Claude Code、Codex、OpenClaw 只是承载这套方法论的三个不同环境。具体见 [三个运行时怎么承接](#三个运行时怎么承接)。
 
+## 作者与支持
+
+<div align="center">
+  <img src="images/二维码基础款.png" alt="联系方式" width="560"/>
+  <p>
+    GitHub <a href="https://github.com/KimYx0207">KimYx0207</a> |
+    𝕏 <a href="https://x.com/KimYx0207">@KimYx0207</a> |
+    官网 <a href="https://www.aiking.dev/">aiking.dev</a> |
+    微信公众号：<strong>老金带你玩AI</strong>
+  </p>
+  <p>
+    飞书知识库：
+    <a href="https://my.feishu.cn/wiki/OhQ8wqntFihcI1kWVDlcNdpznFf">长期更新入口</a>
+  </p>
+</div>
+
+<div align="center">
+  <table align="center">
+    <tr>
+      <td align="center">
+        <img src="images/微信.jpg" alt="微信收款码" width="220"/>
+        <br/>
+        <strong>微信支付</strong>
+      </td>
+      <td align="center">
+        <img src="images/支付宝.jpg" alt="支付宝收款码" width="220"/>
+        <br/>
+        <strong>支付宝</strong>
+      </td>
+    </tr>
+  </table>
+</div>
+
 ## 方法依据与论文
 
 Meta_Kim 的方法依据来自"基于元的意图放大"评测与方法沉淀：
@@ -538,39 +571,6 @@ Codex 和 OpenClaw 使用各自的原生机制（developer_instructions 和 SOUL
 1. `README.zh-CN.md`（本文件）—— 从这里开始
 2. `CLAUDE.md` —— Claude Code 专用指南
 3. `AGENTS.md` —— Codex 和跨运行时指南
-
-## 作者与支持
-
-<div align="center">
-  <img src="images/二维码基础款.png" alt="联系方式" width="560"/>
-  <p>
-    GitHub <a href="https://github.com/KimYx0207">KimYx0207</a> |
-    𝕏 <a href="https://x.com/KimYx0207">@KimYx0207</a> |
-    官网 <a href="https://www.aiking.dev/">aiking.dev</a> |
-    微信公众号：<strong>老金带你玩AI</strong>
-  </p>
-  <p>
-    飞书知识库：
-    <a href="https://my.feishu.cn/wiki/OhQ8wqntFihcI1kWVDlcNdpznFf">长期更新入口</a>
-  </p>
-</div>
-
-<div align="center">
-  <table align="center">
-    <tr>
-      <td align="center">
-        <img src="images/微信.jpg" alt="微信收款码" width="220"/>
-        <br/>
-        <strong>微信支付</strong>
-      </td>
-      <td align="center">
-        <img src="images/支付宝.jpg" alt="支付宝收款码" width="220"/>
-        <br/>
-        <strong>支付宝</strong>
-      </td>
-    </tr>
-  </table>
-</div>
 
 ## License
 
