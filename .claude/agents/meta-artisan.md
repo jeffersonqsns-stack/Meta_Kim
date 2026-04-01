@@ -1,5 +1,5 @@
 ---
-version: 1.0.6
+version: 1.0.8
 name: meta-artisan
 description: Match the right skills, tools, and capability packages for a Meta_Kim agent or workflow.
 type: agent

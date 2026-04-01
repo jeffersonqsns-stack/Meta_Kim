@@ -1,5 +1,5 @@
 ---
-version: 1.0.7
+version: 1.0.8
 name: meta-prism
 description: Review Meta_Kim outputs for quality drift, AI slop, and evolution signals.
 type: agent

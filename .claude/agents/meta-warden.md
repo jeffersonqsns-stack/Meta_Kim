@@ -1,5 +1,5 @@
 ---
-version: 1.0.7
+version: 1.0.8
 name: meta-warden
 description: Coordinate the Meta_Kim agent team, quality gates, and final synthesis across the other meta agents.
 type: agent

@@ -1,5 +1,5 @@
 ---
-version: 1.0.7
+version: 1.0.8
 name: meta-conductor
 description: Design workflow orchestration, stage sequencing, and rhythm control for Meta_Kim systems.
 type: agent
