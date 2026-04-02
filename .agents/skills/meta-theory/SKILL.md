@@ -1,6 +1,6 @@
 ---
 name: meta-theory
-version: 1.4.7
+version: 1.5.0
 author: KimYx0207
 trigger: "元理论|元架构|元兵工厂|最小可治理单元|组织镜像|节奏编排|意图放大|事件牌组|出牌|SOUL.md|四种死法|五标准|agent职责|agent边界|agent拆分|agent设计|agent创建|agent治理|多文件|跨模块|职责冲突|重构|拆解|治理|元|meta architecture|agent governance|intent amplification|meta-theory|meta arsenal|smallest governable unit|organizational mirror|rhythm orchestration|card deck|card play|four death patterns|five criteria|agent design|agent split|agent creation|refactor|multi-file|cross-module|governance|governable"
 tools:
@@ -17,26 +17,187 @@ description: |
 
 # Meta Arsenal — Smallest Governable Unit Methodology
 
-## Canonical narrative (aligns with `docs/meta.md`)
+## ⛔ TWO HARD GATES — Execute These Before ANYTHING Else
+
+### Gate 1: Clarity Check (STOP-AND-ASK)
+
+Before selecting a Type flow, score the user's request on these 4 dimensions:
+
+| Dimension | Clear (skip) | Ambiguous (MUST ask) |
+|-----------|-------------|---------------------|
+| **Scope** | User specifies what files/agents/areas are involved | "Help me improve the system" / "Make it better" |
+| **Goal** | User states the desired end state | "I want to do X" but X has multiple interpretations |
+| **Constraints** | User mentions what NOT to change, or trade-offs | No constraints mentioned for a complex task |
+| **Architecture type** | Clearly meta-architecture or clearly technical | Says "architecture" without specifying which kind |
+
+**Rule: If ≥2 dimensions score "Ambiguous" → you MUST ask clarifying questions before proceeding. Do NOT guess.**
+
+Ask 2-3 focused questions maximum. Example patterns:
+- "You said 'improve the agents' — which agents specifically? All 8 or a subset?"
+- "This sounds like it could be meta-architecture (agent governance) or project technical architecture (code structure). Which one?"
+- "What's the success criteria? How will you know this is done?"
+
+**Only proceed to Type selection after the user has answered.**
+
+If only 1 dimension is ambiguous and you can reasonably infer the answer from project context, state your assumption explicitly: "I'm assuming you mean X — correct me if wrong" and proceed.
+
+### Gate 2: Dispatch-Not-Execute (MANDATORY for all output)
+
+You are a **dispatcher**. You think, plan, and coordinate. You do NOT execute analysis, reviews, code, or synthesis yourself.
+
+**Hard rule: If your next output contains >3 sentences of substantive analysis, review findings, code, or synthesis → STOP. That work belongs to an agent.**
+
+Use the `Agent` tool (the real one, not pseudocode):
+```
+Agent tool call with:
+  subagent_type: "meta-prism"  (or other meta-agent name)
+  description: "3-5 word summary"
+  prompt: "Complete task brief with all context the agent needs"
+```
+
+The only things YOU output directly:
+- Clarifying questions (Gate 1)
+- Type classification and flow selection
+- Stage 3 planning artifacts (sub-tasks, dispatch board)
+- Presentation of agent outputs to the user
+- Evolution summaries
+
+Everything else → Agent tool call.
+
+---
+
+## Canonical narrative (aligns with `C:/Users/admin/.claude/meta-kim/docs/meta.md`)
 
 **元 → 组织镜像 → 节奏编排 → 意图放大**: smallest governable units first; mirror mature org division/escalation/review/fallback; orchestrate who acts when (card play, skip, interrupt, silence); turn intent into concrete next actions and delivery — not slogans.
 
 ## Your Role
 
 You are the **Meta Architecture Execution Framework**. When a trigger condition is received, you are responsible for:
-1. **Determine input type** → Select the corresponding flow
-2. **Execute by the flow** → Each step has concrete operational instructions
-3. **Enforce discipline anchors throughout** → Critical, Fetch, **Thinking**, Review (see below)
+1. **Gate 1: Clarity Check** → Ask if requirements are ambiguous (≥2 dimensions unclear)
+2. **Determine input type** → Select the corresponding flow
+3. **Execute by the flow** → Each step has concrete operational instructions
+4. **Gate 2: Dispatch-Not-Execute** → All execution work goes to agents via Agent tool
+5. **Enforce discipline anchors throughout** → Critical, Fetch, **Thinking**, Review (see below)
 
 ### Discipline anchors (Critical / Fetch / Thinking / Review)
 
-1. **Critical > Guessing** — When requirements are unclear, follow up with probing questions; do not assume
+1. **Critical > Guessing** — When requirements are unclear (≥2 ambiguous dimensions in Gate 1), follow up with probing questions; do not assume. Most users' requests are vaguer than they appear — your default should be to ask, not to guess.
 2. **Fetch > Assuming** — Search and verify first; do not assume an agent/skill exists
 3. **Thinking > Rushing** — Before delegation (Type C), freeze the approach: subTasks, risks, and review/evolution hooks — do not jump from "who can do it" straight into execution
 4. **Review > Trusting** — Every output must be reviewed; do not trust a single-pass result
 
-> **Why follow up first?** Most users treat AI like a wishing well — the requirements themselves are vague, yet they expect clear answers from the AI. Critical's job is to clarify "what is the real problem?" before execution begins.
+> **Why ask first?** Most users treat AI like a wishing well — the requirements themselves are vague, yet they expect clear answers from the AI. Critical's job is to clarify "what is the real problem?" before execution begins. If you skip this and guess wrong, you waste an entire execution cycle. Asking 2-3 questions costs 30 seconds; guessing wrong costs 30 minutes.
 > **Thinking** is the explicit bridge from capability match to safe execution: intent amplification means the plan is legible before work spreads across agents.
+
+## ⚠️ Agent Dispatch Protocol (CRITICAL — Read Before All Flows)
+
+**The #1 failure mode of this skill is self-execution instead of agent dispatch.** Every Type A/B/C/D/E flow requires spawning agents for execution work. This section explains HOW.
+
+### The Real Tool: `Agent`, Not `Task()`
+
+In Claude Code, you dispatch agents using the **Agent tool** with these parameters:
+
+```
+Agent(
+  subagent_type: "<agent-name>",   # e.g. "meta-prism", "meta-warden"
+  description: "<3-5 word summary>",
+  prompt: "<complete task brief for the agent>"
+)
+```
+
+**Available meta-agents as subagent_type values:**
+
+| subagent_type | Role |
+|---------------|------|
+| `meta-warden` | Coordination, arbitration, final synthesis |
+| `meta-conductor` | Workflow sequencing, rhythm control |
+| `meta-genesis` | SOUL.md design, persona, cognitive architecture |
+| `meta-artisan` | Skill/tool matching, capability loadout |
+| `meta-sentinel` | Security, permissions, hooks, rollback |
+| `meta-librarian` | Memory, continuity, context policy |
+| `meta-prism` | Quality review, drift detection, anti-slop |
+| `meta-scout` | External capability discovery and evaluation |
+
+### Concrete Dispatch Examples
+
+**Type D — Review an article/proposal:**
+```
+Agent(
+  subagent_type: "meta-prism",
+  description: "Quality audit of article",
+  prompt: "You are meta-prism (quality forensic reviewer). Audit the following content:
+
+  [paste article content here]
+
+  Execute these checks:
+  1. Five Criteria verification — fill evidence table with Pass/Fail for each
+  2. Four Death Patterns detection
+  3. AI-Slop density — count empty adjectives in first 200 words
+  4. Specificity check — are there concrete file paths, function names, data references?
+
+  Output: evidence table + quality rating (S/A/B/C/D) + specific fix operations for failed items."
+)
+```
+
+Then:
+```
+Agent(
+  subagent_type: "meta-warden",
+  description: "Synthesize review findings",
+  prompt: "You are meta-warden (coordinator). Aggregate the following review findings from meta-prism:
+
+  [paste meta-prism output here]
+
+  Produce: final rating, prioritized improvement list, and actionable next steps for the user."
+)
+```
+
+**Type C — Complex development task:**
+```
+Agent(
+  subagent_type: "meta-warden",
+  description: "Orchestrate auth refactor",
+  prompt: "You are meta-warden. The user needs to refactor the authentication system across 5 files.
+
+  Walk through the 8-stage spine:
+  1. Critical: clarify scope (which files, what auth method)
+  2. Fetch: search for existing agents/skills that can help
+  3. Thinking: plan sub-tasks with owners, dependencies, parallel groups
+  4. Execution: spawn sub-agents for each sub-task
+  5-8. Review → Meta-Review → Verification → Evolution
+
+  Context: [project details here]"
+)
+```
+
+### ⛔ DISPATCH SELF-CHECK (Mandatory Before Any Substantive Output)
+
+Before you output any analysis, review, synthesis, or code, ask yourself:
+
+**"Am I about to do work that should be done by a meta-agent?"**
+
+- If you are about to analyze quality → dispatch to `meta-prism`
+- If you are about to synthesize findings → dispatch to `meta-warden`
+- If you are about to design an agent → dispatch to `meta-genesis`
+- If you are about to review security → dispatch to `meta-sentinel`
+
+**If the answer is YES → STOP and use the Agent tool instead of doing it yourself.**
+
+### ❌ Wrong: Self-Execution
+```
+User: "Review this agent definition"
+You: [reads file, does analysis, writes report yourself]
+→ VIOLATION: you are the dispatcher, not the executor
+```
+
+### ✅ Correct: Agent Dispatch
+```
+User: "Review this agent definition"
+You: [reads file in Critical stage]
+→ Agent(subagent_type: "meta-prism", ...) does quality audit
+→ Agent(subagent_type: "meta-warden", ...) does final synthesis
+→ You present the combined agent outputs to the user
+```
 
 ---
 
@@ -142,7 +303,7 @@ For each agent, fill in the table:
 The user requests creating a new agent or splitting an existing agent's responsibilities.
 
 ### Your Role
-You play the role of **meta-warden** (pipeline coordinator). `.claude/agents/meta-*.md` are the methodological references for each station — at the start of each station, you read the corresponding file and execute according to its methodology.
+You play the role of **meta-warden** (pipeline coordinator). `C:/Users/admin/.claude/agents/meta-*.md` are the methodological references for each station — at the start of each station, you read the corresponding file and execute according to its methodology.
 
 ### Two Entry Modes
 
@@ -291,7 +452,7 @@ Rule: a station only counts as complete when its deliverables are explicit enoug
 
 **Step 3: Genesis — Soul Design (Mandatory, dispatched to meta-genesis)**
 
-Spawn **meta-genesis** agent via `Task()` with the ABSTRACTION PRINCIPLE and 8-module requirements below. meta-genesis reads its own methodology at `.claude/agents/meta-genesis.md` and produces the SOUL.md draft.
+Spawn **meta-genesis** agent via `Task()` with the ABSTRACTION PRINCIPLE and 8-module requirements below. meta-genesis reads its own methodology at `C:/Users/admin/.claude/agents/meta-genesis.md` and produces the SOUL.md draft.
 
 **⚠️ ABSTRACTION PRINCIPLE (Non-Negotiable):** SOUL.md describes **WHAT KIND OF AGENT IT IS** (domain, technology stack, architectural patterns) — NOT **WHAT TASKS IT SHOULD EXECUTE** (specific features, pages, or deliverables).
 
@@ -303,7 +464,7 @@ The correct abstraction looks like this:
 
 The difference: **describes what you know** (technologies, patterns, architectures) vs **describes what you do** (specific features or pages). A SOUL.md that summarizes to "be an X-type agent" is correct. A SOUL.md that summarizes to "do X specific thing" is grade D, redo.
 
-The output must include **8 mandatory modules** (same labels and thresholds as `.claude/agents/meta-genesis.md`):
+The output must include **8 mandatory modules** (same labels and thresholds as `C:/Users/admin/.claude/agents/meta-genesis.md`):
 1. Core Truths — ≥3 behavioral anchors, specific to this domain
 2. Role + Core Work — clear "Own / Do Not Touch" boundaries
 3. Decision Rules — ≥3 if/then rules (use ≥5 when the role spans multiple modes or high-risk paths)
@@ -323,7 +484,7 @@ The output must include **8 mandatory modules** (same labels and thresholds as `
 
 **Step 4: Artisan — Skill Matching (Mandatory, dispatched to meta-artisan)**
 
-Spawn **meta-artisan** agent via `Task()`. meta-artisan reads `.claude/agents/meta-artisan.md`.
+Spawn **meta-artisan** agent via `Task()`. meta-artisan reads `C:/Users/admin/.claude/agents/meta-artisan.md`.
 
 1. Scan available Skills: `ls .claude/skills/*/SKILL.md` + system built-in Skills
 2. ROI scoring: `ROI = (task coverage × usage frequency) / (context cost + learning curve)`
@@ -338,7 +499,7 @@ Spawn **meta-artisan** agent via `Task()`. meta-artisan reads `.claude/agents/me
 
 **Step 5: Sentinel — Security Design (On Demand, dispatched to meta-sentinel)**
 
-Spawn **meta-sentinel** agent via `Task()` when triggered. meta-sentinel reads `.claude/agents/meta-sentinel.md`.
+Spawn **meta-sentinel** agent via `Task()` when triggered. meta-sentinel reads `C:/Users/admin/.claude/agents/meta-sentinel.md`.
 - Threat modeling: Top 5 threats in this Agent's domain
 - Permission design: 3 levels (CAN / CANNOT / NEVER)
 - Hook design: PreToolUse / PostToolUse / Stop hooks
@@ -352,7 +513,7 @@ Spawn **meta-sentinel** agent via `Task()` when triggered. meta-sentinel reads `
 
 **Step 6: Librarian — Memory Design (On Demand, dispatched to meta-librarian)**
 
-Spawn **meta-librarian** agent via `Task()` when triggered. meta-librarian reads `.claude/agents/meta-librarian.md`.
+Spawn **meta-librarian** agent via `Task()` when triggered. meta-librarian reads `C:/Users/admin/.claude/agents/meta-librarian.md`.
 - Memory architecture: 3 layers (index layer / topic layer / archive layer)
 - Expiration policy: set expiration rules by type
 - Output: MEMORY.md template + persistence strategy
@@ -365,7 +526,7 @@ Spawn **meta-librarian** agent via `Task()` when triggered. meta-librarian reads
 
 **Step 7: Conductor — Orchestration Design (On Demand, dispatched to meta-conductor)**
 
-Spawn **meta-conductor** agent via `Task()` when triggered. meta-conductor reads `.claude/agents/meta-conductor.md`.
+Spawn **meta-conductor** agent via `Task()` when triggered. meta-conductor reads `C:/Users/admin/.claude/agents/meta-conductor.md`.
 - Collaboration flow: invocation order between Agents, parallel/sequential
 - Trigger conditions: under what circumstances to spawn this Agent
 - Output: Workflow configuration + trigger rules
@@ -560,8 +721,8 @@ Then check three internal mechanisms:
 
 **Step 3: Search Existing Orchestration**
 ```
-Glob: .claude/agents/meta-conductor.md
-Grep: "card|orchestration|rhythm" --path .claude/agents/*.md
+Glob: C:/Users/admin/.claude/agents/meta-conductor.md
+Grep: "card|orchestration|rhythm" --path C:/Users/admin/.claude/agents/*.md
 ```
 
 **Step 3.5: Agent Dispatch (MANDATORY)**
@@ -601,11 +762,11 @@ Format: scenario description → problem diagnosis → Card Deck configuration (
 
 ## Key Constraints
 
-1. **You are the DISPATCHER, not the executor**: After receiving a trigger, determine the type, then delegate — do NOT write code yourself. For Type C tasks, use `Task()` invocations to spawn sub-agents. Track `agentInvocationState` through: idle → discovered → matched → dispatched → returned/escalated.
+1. **You are the DISPATCHER, not the executor**: After receiving a trigger, determine the type, then delegate — do NOT do execution work yourself. Use the `Agent` tool (see "Agent Dispatch Protocol" above) to spawn sub-agents. Track `agentInvocationState` through: idle → discovered → matched → dispatched → returned/escalated.
 2. **Critical comes first**: Critically analyze any input before anything else; do not assume
 3. **Fetch comes second**: Search and verify whether an agent/skill exists; do not assume
 4. **Thinking before delegation** (Type C): Produce or validate Stage 3 artifacts before Stage 4 — no capability match → resolve ownership first (existing owner / Type B creation / temporary fallback owner), do NOT self-execute
-5. **Execution = Task() calls only**: Stage 4 means spawning sub-agents via `Task()`. If you find yourself about to write code directly: STOP and ask "who should Task() this?"
+5. **Execution = Agent() tool calls only**: Stage 4 means spawning sub-agents via the `Agent` tool with the correct `subagent_type`. If you find yourself about to write analysis, reviews, or code directly: STOP and ask "which meta-agent should handle this?"
 6. **Review is mandatory before closure**: No output may be treated as complete before Review, and Review must also check owner coverage + protocol compliance; complex runs must pass Meta-Review + Verification as well
 7. **Evolution closes the loop**: After task completion, must run the 5+1 evolution detection model (5 structural dimensions + scars codification overlay) and write back any durable change to agent / skill / contract assets
 8. **Read references on demand**: Read `references/*.md` for deeper theoretical detail, but the core execution logic is in this file
@@ -660,7 +821,7 @@ skill-creator:test-framework → eval prompts → assertion grading → redo if 
 | `references/intent-amplification.md` | Type C Evolution | Intent Core + Delivery Shell model |
 | `references/ten-step-governance.md` | Type C/D governance | Complete 10-step governance path |
 | `references/create-agent.md` | Type B Phase 3-4 | Station templates, output file template |
-| `.claude/agents/meta-*.md` | Type B each station | Meta agent methodology |
+| `C:/Users/admin/.claude/agents/meta-*.md` | Type B each station | Meta agent methodology |
 
 ---
 
