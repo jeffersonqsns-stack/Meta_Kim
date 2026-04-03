@@ -975,7 +975,7 @@ Use the repository tree section in this README.
 
 ### 9. I want the runtime differences. What should I read?
 
-Read `docs/runtime-capability-matrix.md`.
+Internal note: runtime parity reference lives under `docs/` and is not part of the public surface.
 
 ## Simplest Starting Path
 

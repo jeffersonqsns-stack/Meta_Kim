@@ -980,7 +980,7 @@ node scripts/agent-health-report.mjs
 
 ### 9. 我想看三端能力差异，应该读什么？
 
-读 `docs/runtime-capability-matrix.md`。
+内部说明：运行时一致性参考在 `docs/` 下，不属于公开内容。
 
 ## 最简单的开始方式
 
