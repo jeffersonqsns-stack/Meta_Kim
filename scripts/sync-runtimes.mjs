@@ -380,7 +380,7 @@ function buildTools(agent, agents) {
 - 如需协作，优先通过 OpenClaw 原生 agent-to-agent 能力联系队友。
 - \`AGENTS.md\` 只描述 Meta_Kim 团队，不等于整个 OpenClaw 已注册 agent 清单。
 - 用户问 agent 总数、agent 名单、当前可协作对象时，先调用 \`agents_list\` 读取实时注册表；如果工具不可用，再用显式命令查询，并说明答案来自实时注册表。
-- 本 workspace 内的可移植 Skill 位于 \`skills/meta-theory/SKILL.md\`。
+- 共享 Skill 位于 \`../../skills/meta-theory.md\`（openclaw/skills/ 下的唯一副本，不再每个 workspace 各存一份）。
 - 不要把别的 agent 的职责吞进来；超出边界就委派或升级给 \`meta-warden\`。
 
 ## 队友一览
@@ -579,22 +579,6 @@ async function main() {
       writeGeneratedFile(
         path.join(workspaceDir, "TOOLS.md"),
         buildTools(agent, agents)
-      ),
-      writeGeneratedFile(
-        path.join(workspaceDir, "skills", "meta-theory", "SKILL.md"),
-        portableSkill
-      ),
-      ...skillReferences.map((reference) =>
-        writeGeneratedFile(
-          path.join(
-            workspaceDir,
-            "skills",
-            "meta-theory",
-            "references",
-            reference.name
-          ),
-          reference.content
-        )
       ),
     ]);
 

@@ -14,9 +14,10 @@
     "prepare:openclaw-local": "node scripts/prepare-openclaw-local.mjs",
     "eval:agents": "node scripts/eval-meta-agents.mjs",
     "probe:clis": "node scripts/eval-meta-agents.mjs --probe-clis-only",
+    "test:meta-theory": "node --test tests/meta-theory/*.test.mjs",
     "validate": "node scripts/validate-project.mjs",
     "check": "npm run check:runtimes && npm run validate",
-    "verify:all": "npm run check && npm run eval:agents"
+    "verify:all": "npm run check && npm run eval:agents && npm run test:meta-theory"
   },
   "keywords": [
     "claude-code",

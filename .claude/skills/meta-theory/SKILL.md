@@ -621,10 +621,12 @@ The 8-stage execution spine:
 - **Agent Ownership Rule**: Only pure `Q / Query` may bypass agent ownership. Any executable or handoff-able task must have an explicit owner.
 - **Skip-Level Gate**: meta-theory does NOT write code directly — always dispatch to Execution Layer via `Task()` invocations. Track `agentInvocationState` through the cycle: idle → discovered (Fetch) → matched → dispatched → returned/escalated.
 - **Fetch-first**: Search → Match (score 0-3) → Invoke; fallback chain is local → capability index → external search → specialist ecosystem → owner-resolution branch
+- **Option Exploration (MANDATORY)**: Stage 3 MUST analyze **≥2 solution paths** with Pros/Cons before selecting one. Present as a comparison table. Record the chosen path AND rejected alternatives with reasons in a Decision Record. Skipping this step is a Stage 3 violation.
 - **Protocol-first Dispatch**: Stage 4 may not start until Stage 3 has produced run header, dispatch board, worker task packets, merge plan, review packet plan, verification packet plan, and evolution writeback plan.
 - **Parallelism Discipline**: If sub-tasks are independent, they must be parallelized. Every parallel group needs declared dependencies and a merge owner.
 
 **Required Stage 3 artifacts before Stage 4 may start** (full JSON shape: `references/dev-governance.md` § Thinking Stage Output Contract):
+- `optionExploration` — ≥2 solution paths with Pros/Cons table + Decision Record (selected path, rejected options with reasons)
 - `subTasks` — each task has owner, file scope, and parallel/sequential marker
 - `runHeader` — the 6-field contract for the current run
 - `dispatchBoard` — one-board summary tying all work to the sole primary deliverable
