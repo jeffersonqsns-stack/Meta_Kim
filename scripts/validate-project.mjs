@@ -718,10 +718,10 @@ async function validateClaudeAgents() {
   const conductorPath = path.join(claudeAgentsDir, "meta-conductor.md");
   const conductorRaw = await fs.readFile(conductorPath, "utf8");
   for (const marker of [
-    "一次 run = 一个部门 = 一件事",
-    "唯一主交付物",
-    "handoff对象",
-    "视觉/素材策略"
+    "One run = one department = one thing",
+    "sole primary deliverable",
+    "All worker tasks must serve the same delivery chain",
+    "Visual/Material Strategy"
   ]) {
     assert(
       conductorRaw.includes(marker),
@@ -732,10 +732,10 @@ async function validateClaudeAgents() {
   const wardenPath = path.join(claudeAgentsDir, "meta-warden.md");
   const wardenRaw = await fs.readFile(wardenPath, "utf8");
   for (const marker of [
-    "一次 run 必须只有一个部门和一个主交付物",
-    "交付链纪律",
-    "公开展示纪律",
-    "视觉策略与部门性质一致"
+    "exactly one department and one primary deliverable",
+    "deliverable-chain discipline",
+    "public-display discipline",
+    "Visual strategy consistent with department nature"
   ]) {
     assert(
       wardenRaw.includes(marker),

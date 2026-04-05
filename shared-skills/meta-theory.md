@@ -68,7 +68,7 @@ Everything else → Agent tool call.
 
 ## Canonical narrative (aligns with `docs/meta.md`)
 
-**元 → 组织镜像 → 节奏编排 → 意图放大**: smallest governable units first; mirror mature org division/escalation/review/fallback; orchestrate who acts when (card play, skip, interrupt, silence); turn intent into concrete next actions and delivery — not slogans.
+**Meta → organizational mirror → rhythm orchestration → intent amplification** (`docs/meta.md` uses Chinese labels for the same four beats): smallest governable units first; mirror mature org division/escalation/review/fallback; orchestrate who acts when (card play, skip, interrupt, silence); turn intent into concrete next actions and delivery — not slogans.
 
 ## Your Role
 

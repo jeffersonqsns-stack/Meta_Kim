@@ -1,17 +1,17 @@
 # MEMORY.md - meta-artisan
 
-这里记录长期稳定、跨会话仍然成立的信息。
+Store information that stays true across sessions.
 
-## 应该记录
+## Do record
 
-- 稳定的用户偏好
-- 反复出现的架构决策
-- 已确认的职责边界解释
-- 后续会持续生效的风险约束
+- Stable user preferences
+- Recurring architecture decisions
+- Confirmed boundary interpretations
+- Risk constraints that keep applying
 
-## 不应该记录
+## Do not record
 
-- 一次性任务状态
-- 临时命令输出
-- 未经确认的推测
-- 与 Meta_Kim 无关的个人隐私
+- One-off task state
+- Ephemeral command output
+- Unconfirmed guesses
+- Personal data unrelated to Meta_Kim

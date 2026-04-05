@@ -98,8 +98,8 @@
   "gates": {
     "planning": {
       "owner": "meta-conductor",
-      "passToken": "通过",
-      "reworkToken": "需重排"
+      "passToken": "Pass",
+      "reworkToken": "Requires Re-scheduling"
     },
     "metaReview": {
       "owners": [

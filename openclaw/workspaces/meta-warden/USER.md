@@ -8,4 +8,4 @@
 
 ## Context
 
-补充这位用户和 Meta_Kim 项目有关的长期偏好，但不要记录无关隐私。
+Record this user's long-term preferences for Meta_Kim work; do not store unrelated private data.

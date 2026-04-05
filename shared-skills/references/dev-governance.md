@@ -1,7 +1,8 @@
-# 开发治理流程 — 完整操作规范
+# Development governance flow — full specification (Type C)
 
-> 本文件是 Type C (Development Governance Flow) 的详细操作规范。
-> SKILL.md 中的 Type C 节只包含摘要入口，本文件包含完整操作步骤。
+> Detailed operating spec for Type C (Development Governance Flow).
+> The Type C section in `SKILL.md` is the entry summary; this file contains the full procedure.
+> For the same narrative in Chinese, see `docs/meta.md`.
 > Read this file when executing Type C — Development Governance Flow.
 
 ## 1. AGENT INVOCATION PRINCIPLE (Non-Negotiable)
@@ -123,7 +124,7 @@ The 8-stage spine is the **human-readable orchestration surface**. Underneath it
 
 ### Card Governance Model
 
-Meta_Kim no longer treats “发牌” as just a metaphor. In engineering terms:
+Meta_Kim no longer treats **dealing cards** as just a metaphor. In engineering terms:
 
 - **dealer primary owner**: `meta-conductor`
 - **dealer escalation owner**: `meta-warden`
@@ -131,10 +132,10 @@ Meta_Kim no longer treats “发牌” as just a metaphor. In engineering terms:
 
 This is intentionally **not** a new agent. It is a protocol role layered on top of Conductor/Warden so the system gains one explicit decision chain:
 
-1. **发不发**: `cardDecision`
-2. **发给谁**: `cardAudience`
-3. **什么时候发**: `cardTiming`
-4. **用什么壳发**: `deliveryShell`
+1. **Whether to deal**: `cardDecision`
+2. **Deal to whom**: `cardAudience`
+3. **When to deal**: `cardTiming`
+4. **Which delivery shell**: `deliveryShell`
 
 ### Card Decision Objects
 
@@ -1073,16 +1074,16 @@ If any one of these is false, the run may produce internal notes, but it must no
 
 | Card | Trigger Condition | Action |
 |------|-------------------|--------|
-| Scope Contraction (范围收缩牌) | Repository too large / duplicate filenames / branching history | Ask which target to change, then proceed |
-| Risk (风险牌) | Shared components / auth / global interfaces / hot multi-editor areas | Surface; may trigger interrupt path |
-| Suggestion (建议牌) | User hesitates; interruption costly | Low-cost forward plan or intentional silence |
-| Silence (留白牌) | ≥3 consecutive high-density push rounds | Pause for digestion |
-| Skip (跳过牌) | Attention cost > benefit | Simplify or defer |
-| Interrupt (插队牌) | Emergency or Sentinel-critical | Prioritize and reorder |
-| Iteration (迭代牌) | Acceptance not closed within agreed rounds | Loop with explicit gate; max 3 iterations, then escalate to Warden |
-| **Rollback (回滚牌)** | Risk exceeded original scope OR impact scope expanded beyond acceptance | Revert to last stable state; re-enter Stage 3 Thinking to re-decompose |
+| Scope Contraction | Repository too large / duplicate filenames / branching history | Ask which target to change, then proceed |
+| Risk | Shared components / auth / global interfaces / hot multi-editor areas | Surface; may trigger interrupt path |
+| Suggestion | User hesitates; interruption costly | Low-cost forward plan or intentional silence |
+| Silence | ≥3 consecutive high-density push rounds | Pause for digestion |
+| Skip | Attention cost > benefit | Simplify or defer |
+| Interrupt | Emergency or Sentinel-critical | Prioritize and reorder |
+| Iteration | Acceptance not closed within agreed rounds | Loop with explicit gate; max 3 iterations, then escalate to Warden |
+| **Rollback** | Risk exceeded original scope OR impact scope expanded beyond acceptance | Revert to last stable state; re-enter Stage 3 Thinking to re-decompose |
 
-**Card naming note**: The English names are used internally; the Chinese names in parentheses (e.g. 范围收缩牌) align with `docs/meta.md` original design. Conductor should use the Chinese names in user-facing outputs.
+**Card naming note**: English names are canonical in this repository. `docs/meta.md` uses Chinese labels for the same cards; align wording with your audience and locale.
 
 Spine coverage reference (what each stage is for — not separate “card” names):
 

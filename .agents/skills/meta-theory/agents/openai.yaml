@@ -1,6 +1,6 @@
 interface:
   display_name: "Meta Theory"
-  short_description: "Meta_Kim 的跨运行时元理论与协作方法"
+  short_description: "Meta_Kim cross-runtime meta-theory and collaboration method"
 policy:
   allow_implicit_invocation: true
 dependencies:
