@@ -330,7 +330,19 @@ cd Meta_Kim
 node setup.mjs
 ```
 
+| 使い方 | 説明 |
+| --- | --- |
+| `node setup.mjs` | 対話式セットアップ（言語選択 → インストール/アップデート/チェック） |
+| `node setup.mjs --lang ja-JP` | 言語選択をスキップして日本語で実行 |
+| `node setup.mjs --update` | 全スキルと依存関係を更新 |
+| `node setup.mjs --check` | 環境 + 依存関係 + ランタイム間同期チェック |
+| `node setup.mjs --silent` | 非対話モード（CI/スクリプト用） |
+
+`node setup.mjs` は対話式ウィザードを起動します：言語選択（en / zh-CN / ja-JP / ko-KR）→ アクションメニュー（インストール/アップデート/チェック/終了）。インストールフローでは、環境チェック、`npm install`、9つのグローバルメタスキルのインストール、依存関係とランタイム間同期状態の検証（Claude Code / Codex / OpenClaw）を行い、`validate` を実行します。チェックモード（`--check`）はフルプレフライトチェックを実行します：環境、9スキル依存検証、ランタイム間同期状態 — 何も変更しません。
+
 > **サードパーティのメタスキル findskill:** **Meta_Kim を正としてください。** `setup.mjs` は **`KimYx0207/findskill`** を `~/.claude/skills/findskill/` にインストールします。**本リポジトリ内のドキュメントとエージェントでは名称を `findskill` に統一**します。別チャネルから同じ機能を重複インストールしないでください。
+
+> 純粋な Node.js スクリプト — Windows / macOS / Linux で動作し、bash 不要。
 
 または手動:
 

@@ -893,13 +893,15 @@ cd Meta_Kim
 node setup.mjs
 ```
 
-| Usage                       | Description                              |
-| --------------------------- | ---------------------------------------- |
-| `node setup.mjs`          | First-time install                       |
-| `node setup.mjs --update` | Update installed skills and dependencies |
-| `node setup.mjs --check`  | Check environment only, no install       |
+| Usage                              | Description                                              |
+| ---------------------------------- | -------------------------------------------------------- |
+| `node setup.mjs`                   | Interactive setup (language → install / update / check)  |
+| `node setup.mjs --lang zh-CN`     | Skip language selection, use Chinese                     |
+| `node setup.mjs --update`          | Update all skills and dependencies                       |
+| `node setup.mjs --check`           | Environment + dependency + cross-runtime sync check      |
+| `node setup.mjs --silent`          | Non-interactive (CI / scripts)                           |
 
-`node setup.mjs` runs environment checks, `npm install`, installs the 9 global meta-skills, runs `validate`, and performs the MCP self-test. It does not rewrite repo-local runtime mirrors or rebuild the global capability index; those maintainer steps are covered below.
+`node setup.mjs` launches an interactive wizard: language selection (en / zh-CN / ja-JP / ko-KR) → action menu (install / update / check / exit). The install flow runs environment checks, `npm install`, installs the 9 global meta-skills, verifies dependencies and cross-runtime sync status (Claude Code / Codex / OpenClaw), then runs `validate`. The check mode (`--check`) performs a full preflight: environment, 9-skill dependency verification, and cross-runtime sync status — all without modifying anything.
 
 > **Third-party meta-skill `findskill`:** treat **Meta_Kim as canonical**. `setup.mjs` installs **`KimYx0207/findskill`** into `~/.claude/skills/findskill/`. **Agents and docs in this repo use the name `findskill` only** — do not mix legacy spellings. Avoid parallel duplicate installs from other channels.
 
@@ -1107,9 +1109,9 @@ The system routes each request through the matching governance stage.
 
 | Command                                  | When to use it                                   | What it does                                                          |
 | ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------- |
-| `node setup.mjs`                       | **first setup**                            | **one-click install (recommended)**                             |
-| `node setup.mjs --update`              | when skills/deps need updating                   | one-click update                                                      |
-| `node setup.mjs --check`               | when you want an environment preflight          | checks the environment only, without installing                        |
+| `node setup.mjs`                       | **first setup**                            | interactive wizard: language → install / update / check        |
+| `node setup.mjs --update`              | when skills/deps need updating                   | update all skills + optional runtime sync                      |
+| `node setup.mjs --check`               | when you want an environment preflight          | env + dependency + cross-runtime sync verification             |
 | `npm install`                          | manual setup                                     | installs Node dependencies                                            |
 | `npm run sync:runtimes`                | after editing canonical source                   | rebuilds runtime mirrors                                              |
 | `npm run check:runtimes`               | when you only want a diff check                  | verifies mirrors are current without rewriting                        |

@@ -897,11 +897,13 @@ node setup.mjs
 
 | 用法 | 说明 |
 | --- | --- |
-| `node setup.mjs` | 首次安装 |
-| `node setup.mjs --update` | 更新已安装的 skills 和依赖 |
-| `node setup.mjs --check` | 仅检查环境，不安装 |
+| `node setup.mjs` | 交互式向导（选语言 → 安装 / 更新 / 检查） |
+| `node setup.mjs --lang en` | 跳过语言选择，使用英语 |
+| `node setup.mjs --update` | 更新所有技能和依赖 |
+| `node setup.mjs --check` | 环境 + 依赖 + 跨运行时同步检查 |
+| `node setup.mjs --silent` | 非交互模式（CI / 脚本） |
 
-`node setup.mjs` 会依次做环境检查、`npm install`、9 个全局元技能安装、`validate`，以及 MCP 自测。它不会重写仓库内 runtime 镜像，也不会生成全局能力索引；这些维护步骤见下面的手动流程。
+`node setup.mjs` 启动交互式向导：语言选择（en / zh-CN / ja-JP / ko-KR）→ 操作菜单（安装 / 更新 / 检查 / 退出）。安装流程依次执行环境检查、`npm install`、安装 9 个全局元技能、验证依赖和跨运行时同步状态（Claude Code / Codex / OpenClaw），然后运行 `validate`。检查模式（`--check`）执行完整预检：环境、9 项技能依赖验证和跨运行时同步状态——不做任何修改。
 
 > **第三方元技能 findskill**：请**以本仓库为准**。`setup.mjs` 安装 **`KimYx0207/findskill`**（在公开生态能力上的维护与优化版）至 `~/.claude/skills/findskill/`。**本仓库内文档与 agent 统一使用名称 `findskill`**，勿与旧写法混用。勿在不同渠道重复安装同能力。
 
@@ -1112,9 +1114,9 @@ node scripts/agent-health-report.mjs
 
 | 命令 | 什么时候用 | 作用 |
 | --- | --- | --- |
-| `node setup.mjs` | **首次拉仓库** | **一键安装（推荐）** |
-| `node setup.mjs --update` | 依赖/技能需要更新时 | 一键更新 |
-| `node setup.mjs --check` | 想先做环境体检时 | 只检查环境，不安装 |
+| `node setup.mjs` | **首次拉仓库** | **交互式向导：语言 → 安装 / 更新 / 检查** |
+| `node setup.mjs --update` | 依赖/技能需要更新时 | 更新所有技能 + 可选运行时同步 |
+| `node setup.mjs --check` | 想先做环境体检时 | 环境 + 依赖 + 跨运行时同步验证 |
 | `npm install` | 手动安装时 | 安装 Node 依赖 |
 | `npm run sync:runtimes` | 改完主源后 | 重建三端镜像 |
 | `npm run check:runtimes` | 不想写文件时 | 只检查镜像是否最新 |
