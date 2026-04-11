@@ -170,6 +170,8 @@ const I18N = {
     skillExists: (n) => `${n} — already installed`,
     skillSubdirInstalled: (n, s) => `${n} — installed (subdir: ${s})`,
     skillFailed: (n, r) => `${n} — failed (${r})`,
+    skillUpdateFailed: (n) =>
+      `${n} — update skipped (non-fast-forward; keeping existing)`,
     skillSubdirNotFound: (n) => `${n} — subdir not found`,
     skillsReady: (ok, total, fail) =>
       `${ok}/${total} skills ready${fail > 0 ? `, ${fail} failed` : ""}`,
@@ -204,6 +206,7 @@ const I18N = {
       "Meta_Kim skills install to ~/.claude/skills/ (global). Install globally?",
     globalDirReady: (p) => `Global skills dir ready: ${p}`,
     globalDirCreated: (p) => `Created global skills dir: ${p}`,
+    globalDirCreateFailed: (e) => `Failed to create global skills dir: ${e}`,
     globalDirTitle: "Global Skills Directory",
     globalDirPrompt: `Meta_Kim skills will be installed to ~/.claude/skills/
 • Global install — Shared across all projects
@@ -377,6 +380,8 @@ const I18N = {
     skillExists: (n) => `${n} — 已安装`,
     skillSubdirInstalled: (n, s) => `${n} — 已安装 (子目录: ${s})`,
     skillFailed: (n, r) => `${n} — 安装失败 (${r})`,
+    skillUpdateFailed: (n) =>
+      `${n} — 更新跳过（非 fast-forward，保留现有版本）`,
     skillSubdirNotFound: (n) => `${n} — 子目录未找到`,
     skillsReady: (ok, total, fail) =>
       `${ok}/${total} 个技能就绪${fail > 0 ? `，${fail} 个失败` : ""}`,
@@ -410,6 +415,7 @@ const I18N = {
       "Meta_Kim 技能安装到 ~/.claude/skills/（全局）。是否全局安装？",
     globalDirReady: (p) => `全局技能目录就绪：${p}`,
     globalDirCreated: (p) => `已创建全局技能目录：${p}`,
+    globalDirCreateFailed: (e) => `创建全局技能目录失败：${e}`,
     globalDirTitle: "全局技能目录",
     globalDirPrompt: `Meta_Kim 技能将安装到 ~/.claude/skills/
 • 全局安装 — 所有项目共享
@@ -581,6 +587,8 @@ const I18N = {
     skillSubdirInstalled: (n, s) =>
       `${n} — インストール済み (サブディレクトリ: ${s})`,
     skillFailed: (n, r) => `${n} — 失敗 (${r})`,
+    skillUpdateFailed: (n) =>
+      `${n} — 更新スキップ（非 fast-forward、既存版を維持）`,
     skillSubdirNotFound: (n) => `${n} — サブディレクトリが見つかりません`,
     skillsReady: (ok, total, fail) =>
       `${ok}/${total} スキル準備完了${fail > 0 ? `、${fail} 失敗` : ""}`,
@@ -615,6 +623,8 @@ const I18N = {
       "Meta_Kim スキルは ~/.claude/skills/（グローバル）にインストールされます。グローバルインストールしますか？",
     globalDirReady: (p) => `グローバルスキルディレクトリ準備完了：${p}`,
     globalDirCreated: (p) => `グローバルスキルディレクトリ作成：${p}`,
+    globalDirCreateFailed: (e) =>
+      `グローバルスキルディレクトリの作成に失敗：${e}`,
     globalDirTitle: "グローバルスキルディレクトリ",
     globalDirPrompt: `Meta_Kim スキルは ~/.claude/skills/ にインストールされます
 • グローバルインストール — すべてのプロジェクトで共有
@@ -799,6 +809,8 @@ const I18N = {
     skillExists: (n) => `${n} — 이미 설치됨`,
     skillSubdirInstalled: (n, s) => `${n} — 설치됨 (하위디렉토리: ${s})`,
     skillFailed: (n, r) => `${n} — 실패 (${r})`,
+    skillUpdateFailed: (n) =>
+      `${n} — 업데이트 건너뜀（非 fast-forward, 기존 버전 유지）`,
     skillSubdirNotFound: (n) => `${n} — 하위디렉토리를 찾을 수 없음`,
     skillsReady: (ok, total, fail) =>
       `${ok}/${total} 스킬 준비 완료${fail > 0 ? `, ${fail} 실패` : ""}`,
@@ -833,6 +845,7 @@ const I18N = {
       "Meta_Kim 스킬을 ~/.claude/skills/ (전역)에 설치합니다. 전역 설치할까요?",
     globalDirReady: (p) => `전역 스킬 디렉토리 준비됨: ${p}`,
     globalDirCreated: (p) => `전역 스킬 디렉토리 생성됨: ${p}`,
+    globalDirCreateFailed: (e) => `전역 스킬 디렉토리 생성 실패：${e}`,
     globalDirTitle: "전역 스킬 디렉토리",
     globalDirPrompt: `Meta_Kim 스킬은 ~/.claude/skills/ 에 설치됩니다
 • 전역 설치 — 모든 프로젝트에서 공유
@@ -1276,9 +1289,14 @@ async function ensureGlobalSkillsDir() {
     return false;
   }
 
-  mkdirSync(SKILLS_DIR, { recursive: true });
-  ok(t.globalDirCreated(SKILLS_DIR));
-  return true;
+  try {
+    mkdirSync(SKILLS_DIR, { recursive: true });
+    ok(t.globalDirCreated(SKILLS_DIR));
+    return true;
+  } catch (err) {
+    fail(t.globalDirCreateFailed(err.message));
+    return false;
+  }
 }
 
 // ── Dependency verification ─────────────────────────────
@@ -1721,7 +1739,7 @@ async function autoConfigure(installScope = "project") {
     ok("Repo projections synced from canonical/");
     return true;
   }
-  warn("Repo projection sync failed");
+  fail("Repo projection sync failed — some runtime configs may be stale");
   return false;
 }
 
@@ -1764,7 +1782,9 @@ function installSkill(skill) {
           ok(t.skillUpdated(skill.name));
           return true;
         }
-        rmSync(target, { recursive: true, force: true });
+        // ff-only failure: don't delete the existing skill, just warn and skip
+        warn(t.skillUpdateFailed(skill.name));
+        return true;
       }
     } else {
       skip(t.skillExists(skill.name));
@@ -1882,7 +1902,11 @@ async function installPythonTools() {
     shell: isWin,
   });
   if (installResult.status !== 0) {
+    const stderr = installResult.stderr?.toString().trim();
     warn(t.graphifyInstallFailed);
+    if (stderr) {
+      console.log(`${C.dim}  pip error: ${stderr}${C.reset}`);
+    }
     return;
   }
   ok(t.graphifyInstalled);
