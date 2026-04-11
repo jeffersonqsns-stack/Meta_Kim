@@ -117,7 +117,36 @@ flowchart LR
 
 ## 저자·지원
 
-(연락처·결제 QR은 [README.md](README.md)와 동일합니다.)
+<div align="center">
+  <img src="docs/images/%E4%BA%8C%E7%BB%B4%E7%A0%81%E5%9F%BA%E7%A1%80%E6%AC%BE.png" alt="Contact QR" width="560"/>
+  <p>
+    GitHub <a href="https://github.com/KimYx0207">KimYx0207</a> |
+    𝕏 <a href="https://x.com/KimYx0207">@KimYx0207</a> |
+    Website <a href="https://www.aiking.dev/">aiking.dev</a> |
+    WeChat Official Account: <strong>老金带你玩AI</strong>
+  </p>
+  <p>
+    Feishu knowledge base:
+    <a href="https://my.feishu.cn/wiki/OhQ8wqntFihcI1kWVDlcNdpznFf">ongoing updates</a>
+  </p>
+</div>
+
+<div align="center">
+  <table align="center">
+    <tr>
+      <td align="center">
+        <img src="docs/images/%E5%BE%AE%E4%BF%A1.jpg" alt="WeChat Pay QR" width="220"/>
+        <br/>
+        <strong>WeChat Pay</strong>
+      </td>
+      <td align="center">
+        <img src="docs/images/%E6%94%AF%E4%BB%98%E5%AE%9D.jpg" alt="Alipay QR" width="220"/>
+        <br/>
+        <strong>Alipay</strong>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## 논문·방법론 근거
 
