@@ -1345,6 +1345,28 @@ function openclawWorkspaceMdComplete(wsPath) {
   return OPENCLAW_WORKSPACE_MD.every((name) => existsSync(join(wsPath, name)));
 }
 
+function resolveRuntimeHome(runtimeId) {
+  const envKeys = {
+    claude: ["META_KIM_CLAUDE_HOME", "CLAUDE_HOME"],
+    codex: ["META_KIM_CODEX_HOME", "CODEX_HOME"],
+    openclaw: ["META_KIM_OPENCLAW_HOME", "OPENCLAW_HOME"],
+    cursor: ["META_KIM_CURSOR_HOME", "CURSOR_HOME"],
+  };
+  const keys = envKeys[runtimeId] || [runtimeId.toUpperCase() + "_HOME"];
+  for (const key of keys) {
+    const v = process.env[key];
+    if (v) return resolve(v);
+  }
+  return join(
+    homedir(),
+    runtimeId === "codex"
+      ? ".codex"
+      : runtimeId === "openclaw"
+        ? ".openclaw"
+        : "." + runtimeId,
+  );
+}
+
 function checkSync(
   runtimes,
   repoTargets = ["claude", "codex", "openclaw", "cursor"],
@@ -1352,9 +1374,15 @@ function checkSync(
   heading(t.syncHeading);
   let allOk = true;
 
+  // Use global runtime home dirs for path resolution (same as sync-runtimes.mjs)
+  const claudeHome = resolveRuntimeHome("claude");
+  const codexHome = resolveRuntimeHome("codex");
+  const openclawHome = resolveRuntimeHome("openclaw");
+  const cursorHome = resolveRuntimeHome("cursor");
+
   // --- Claude Code ---
   if (repoTargets.includes("claude")) {
-    const claudeAgentsDir = join(PROJECT_DIR, ".claude", "agents");
+    const claudeAgentsDir = join(claudeHome, "agents");
     if (existsSync(claudeAgentsDir)) {
       const agents = readdirSync(claudeAgentsDir).filter((f) =>
         f.endsWith(".md"),
@@ -1371,8 +1399,7 @@ function checkSync(
     }
 
     const claudeSkillPath = join(
-      PROJECT_DIR,
-      ".claude",
+      claudeHome,
       "skills",
       "meta-theory",
       "SKILL.md",
@@ -1383,23 +1410,39 @@ function checkSync(
       allOk = false;
     }
 
-    const hooksDir = join(PROJECT_DIR, ".claude", "hooks");
-    if (existsSync(hooksDir)) {
-      const hooks = readdirSync(hooksDir).filter((f) => f.endsWith(".mjs"));
-      ok(t.syncClaudeHooks(hooks.length));
+    // Canonical hooks: exact 8 files synced by sync-global-meta-theory.mjs
+    const canonicalHooks = [
+      "block-dangerous-bash.mjs",
+      "pre-git-push-confirm.mjs",
+      "post-format.mjs",
+      "post-typecheck.mjs",
+      "post-console-log-warn.mjs",
+      "subagent-context.mjs",
+      "stop-console-log-audit.mjs",
+      "stop-completion-guard.mjs",
+    ];
+    const hooksDir = join(claudeHome, "hooks", "meta-kim");
+    const missingHooks = canonicalHooks.filter(
+      (h) => !existsSync(join(hooksDir, h)),
+    );
+    if (missingHooks.length === 0) {
+      ok(t.syncClaudeHooks(canonicalHooks.length));
     } else {
-      fail(t.syncMissing(".claude/hooks/"));
+      warn(
+        t.syncMissing(
+          `.claude/hooks/meta-kim/ — missing: ${missingHooks.join(", ")}`,
+        ),
+      );
       allOk = false;
     }
 
-    if (existsSync(join(PROJECT_DIR, ".claude", "settings.json")))
-      ok(t.syncClaudeSettings);
+    if (existsSync(join(claudeHome, "settings.json"))) ok(t.syncClaudeSettings);
     else {
       warn(t.syncMissing(".claude/settings.json"));
       allOk = false;
     }
 
-    if (existsSync(join(PROJECT_DIR, ".mcp.json"))) ok(t.syncClaudeMcp);
+    if (existsSync(join(claudeHome, ".mcp.json"))) ok(t.syncClaudeMcp);
     else {
       warn(t.syncMissing(".mcp.json"));
       allOk = false;
@@ -1409,7 +1452,7 @@ function checkSync(
   // --- Codex ---
   if (repoTargets.includes("codex")) {
     console.log("");
-    const codexAgentsDir = join(PROJECT_DIR, ".codex", "agents");
+    const codexAgentsDir = join(codexHome, "agents");
     if (existsSync(codexAgentsDir)) {
       const agents = readdirSync(codexAgentsDir).filter((f) =>
         f.endsWith(".toml"),
@@ -1425,15 +1468,10 @@ function checkSync(
       allOk = false;
     }
 
-    const codexSkillPath = join(
-      PROJECT_DIR,
-      ".codex",
-      "skills",
-      "meta-theory.md",
-    );
+    const codexSkillPath = join(codexHome, "skills", "meta-theory", "SKILL.md");
     if (existsSync(codexSkillPath)) ok(t.syncCodexSkills);
     else {
-      fail(t.syncMissing(".codex/skills/meta-theory.md"));
+      fail(t.syncMissing(".codex/skills/meta-theory/SKILL.md"));
       allOk = false;
     }
   }
@@ -1441,39 +1479,35 @@ function checkSync(
   // --- OpenClaw ---
   if (repoTargets.includes("openclaw")) {
     console.log("");
-    const ocWorkspaces = join(PROJECT_DIR, "openclaw", "workspaces");
-    if (existsSync(ocWorkspaces)) {
-      const wsDirs = readdirSync(ocWorkspaces, { withFileTypes: true })
-        .filter((d) => d.isDirectory())
-        .map((d) => d.name);
-      const wsCount = wsDirs.filter((n) => META_AGENTS.includes(n)).length;
-      const completeAgents = META_AGENTS.filter((id) =>
-        openclawWorkspaceMdComplete(join(ocWorkspaces, id)),
-      ).length;
-      if (
-        wsCount === META_AGENTS.length &&
-        completeAgents === META_AGENTS.length
-      ) {
-        ok(t.syncOpenclawWorkspaces(wsCount));
-      } else {
-        warn(
-          t.syncPartial(
-            "OpenClaw workspaces",
-            `${completeAgents}/${META_AGENTS.length} agents with 9 core .md`,
-            `${META_AGENTS.length} agents, 9 .md each (BOOT … TOOLS)`,
-          ),
-        );
-        allOk = false;
-      }
+    // OpenClaw workspaces: scan openclawHome for workspace-* directories
+    // (not a "workspaces/" subdirectory — actual layout is ~/.openclaw/workspace-{id}/)
+    const wsDirs = readdirSync(openclawHome, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && d.name.startsWith("workspace-"))
+      .map((d) => d.name.replace(/^workspace-/, ""));
+    const wsCount = wsDirs.filter((n) => META_AGENTS.includes(n)).length;
+    const completeAgents = META_AGENTS.filter((id) =>
+      openclawWorkspaceMdComplete(join(openclawHome, `workspace-${id}`)),
+    ).length;
+    if (
+      wsCount === META_AGENTS.length &&
+      completeAgents === META_AGENTS.length
+    ) {
+      ok(t.syncOpenclawWorkspaces(wsCount));
     } else {
-      fail(t.syncMissing("openclaw/workspaces/"));
+      warn(
+        t.syncPartial(
+          "OpenClaw workspaces",
+          `${completeAgents}/${META_AGENTS.length} agents with 9 core .md`,
+          `${META_AGENTS.length} agents, 9 .md each (BOOT … TOOLS)`,
+        ),
+      );
       allOk = false;
     }
   }
 
   // --- Shared ---
   if (repoTargets.includes("openclaw")) {
-    const sharedSkill = join(PROJECT_DIR, "shared-skills", "meta-theory.md");
+    const sharedSkill = join(openclawHome, "shared-skills", "meta-theory.md");
     if (existsSync(sharedSkill)) ok(t.syncSharedSkills);
     else {
       warn(t.syncMissing("shared-skills/meta-theory.md"));
@@ -1484,7 +1518,7 @@ function checkSync(
   // --- Cursor ---
   if (repoTargets.includes("cursor")) {
     console.log("");
-    const cursorAgentsDir = join(PROJECT_DIR, ".cursor", "agents");
+    const cursorAgentsDir = join(cursorHome, "agents");
     if (existsSync(cursorAgentsDir)) {
       const agents = readdirSync(cursorAgentsDir).filter((f) =>
         f.endsWith(".md"),
@@ -1496,13 +1530,12 @@ function checkSync(
         allOk = false;
       }
     } else {
-      fail(t.syncMissing(".cursor/agents/"));
-      allOk = false;
+      // Cursor may not support global agents directory
+      warn(t.syncMissing(".cursor/agents/ (may not be supported globally)"));
     }
 
     const cursorSkillPath = join(
-      PROJECT_DIR,
-      ".cursor",
+      cursorHome,
       "skills",
       "meta-theory",
       "SKILL.md",
@@ -1513,7 +1546,7 @@ function checkSync(
       allOk = false;
     }
 
-    const cursorMcp = join(PROJECT_DIR, ".cursor", "mcp.json");
+    const cursorMcp = join(cursorHome, "mcp.json");
     if (existsSync(cursorMcp)) ok(t.syncCursorMcp);
     else {
       warn(t.syncMissing(".cursor/mcp.json"));
